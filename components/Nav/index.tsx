@@ -1,16 +1,16 @@
-import { Fragment } from 'react'
-import { Disclosure, Menu, Transition } from '@headlessui/react'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import MobileNavMenu from './MobileNavMenu'
-import PageLink from './PageLink'
-import Search from '../Search'
+import { Fragment } from "react";
+import { Disclosure, Menu, Transition } from "@headlessui/react";
+import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import MobileNavMenu from "./MobileNavMenu";
+import PageLink from "./PageLink";
+import Search from "../Search";
 
-export default function Nav () {
-    return (
-        <Disclosure as="nav" className="bg-primary-300">
+export default function Nav() {
+  return (
+    <Disclosure as="nav" className="bg-primary-300">
       {({ open }) => (
         <>
-        <nav className="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
+          <nav className="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
             <section className="relative flex h-16 items-center justify-between">
               <div className="flex items-center px-2 lg:px-0">
                 <div className="flex-shrink-0">
@@ -22,10 +22,10 @@ export default function Nav () {
                 </div>
                 <div className="hidden lg:ml-6 lg:block">
                   <ul className="flex space-x-4">
-                    <PageLink href="#" pageName="home"/>
-                    <PageLink href="#" pageName="gallery"/>
-                    <PageLink href="#" pageName="create room"/>
-                    <PageLink href="#" pageName="vote"/>
+                    <PageLink href="#" pageName="home" />
+                    <PageLink href="#" pageName="gallery" />
+                    <PageLink href="#" pageName="create room" />
+                    <PageLink href="#" pageName="vote" />
                   </ul>
                 </div>
               </div>
@@ -78,7 +78,7 @@ export default function Nav () {
                             <a
                               href="#"
                               className={`
-                                ${active ? 'bg-gray-100' : ''}
+                                ${active ? "bg-gray-100" : ""}
                                 'block px-4 py-2 text-sm text-gray-700'
                               `}
                             >
@@ -91,7 +91,7 @@ export default function Nav () {
                             <a
                               href="#"
                               className={`
-                              ${active ? 'bg-gray-100' : ''}
+                              ${active ? "bg-gray-100" : ""}
                                 'block px-4 py-2 text-sm text-gray-700'
                               `}
                             >
@@ -104,7 +104,7 @@ export default function Nav () {
                             <a
                               href="#"
                               className={`
-                                ${active ? 'bg-gray-100' : ''}
+                                ${active ? "bg-gray-100" : ""}
                                 'block px-4 py-2 text-sm text-gray-700'
                               `}
                             >
@@ -119,9 +119,9 @@ export default function Nav () {
               </div>
             </section>
           </nav>
-          <MobileNavMenu/>
+          <MobileNavMenu />
         </>
       )}
     </Disclosure>
-    )
-} 
+  );
+}
