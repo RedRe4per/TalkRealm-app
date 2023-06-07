@@ -4,5 +4,8 @@
     "next",
     "prettier",
     "plugin:storybook/recommended"
-  ]
+  ],
+  "rules": {
+    "@next/next/no-img-element": "off"
+  }
 }

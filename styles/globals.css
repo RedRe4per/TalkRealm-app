@@ -7,3 +7,9 @@
       @apply text-secondary;
     } 
   }
+
+  @layer components {
+    .nav-page-link {
+      @apply rounded-md bg-gray-900 px-3 py-2 text-heading-small-7-standard text-secondary;
+    }
+  }
