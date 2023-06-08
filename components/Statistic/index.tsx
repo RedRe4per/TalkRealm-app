@@ -31,27 +31,27 @@ export default function Statistic() {
           />
         </div>
         <div className="mx-auto max-w-2xl lg:mx-0 lg:max-w-xl">
-          <h2 className="text-base font-semibold leading-8 text-indigo-400">
+          <h2 className="text-heading-large-6 text-quaternary">
             Our Achievements
           </h2>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <p className="mt-2 text-heading-small-4 font-bold tracking-tight text-secondary-100 sm:text-heading-small-3">
             Empowering Global Communication
           </p>
-          <p className="mt-6 text-lg leading-8 text-gray-300">
+          <p className="mt-6 text-text-4 text-secondary">
             We&apos;ve revolutionized digital communication, bridging the gap
             between people across the globe. Our advanced technology enables
             instant, secure, and high-quality video chats, fostering connections
             and transcending boundaries.
           </p>
         </div>
-        <dl className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-10 text-white sm:mt-20 sm:grid-cols-2 sm:gap-y-16 lg:mx-0 lg:max-w-none lg:grid-cols-4">
+        <dl className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-10 text-secondary sm:mt-20 sm:grid-cols-2 sm:gap-y-16 lg:mx-0 lg:max-w-none lg:grid-cols-4">
           {stats.map((stat) => (
             <div
               key={stat.id}
               className="flex flex-col gap-y-3 border-l border-white/10 pl-6"
             >
-              <dt className="text-sm leading-6">{stat.name}</dt>
-              <dd className="order-first text-3xl font-semibold tracking-tight">
+              <dt className="text-text-3-standard text-secondary">{stat.name}</dt>
+              <dd className="order-first text-heading-large-5 tracking-tight text-secondary-100">
                 {stat.value}
               </dd>
             </div>
