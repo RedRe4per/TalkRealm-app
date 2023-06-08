@@ -26,16 +26,32 @@ export default function Carousel() {
         className="mySwiper"
       >
         <SwiperSlide>
-          <Image src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/123.jpg" fill alt="img1"/>
+          <Image
+            src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/123.jpg"
+            fill
+            alt="img1"
+          />
         </SwiperSlide>
         <SwiperSlide>
-        <Image src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/321.jpg" fill alt="img1"/>
+          <Image
+            src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/321.jpg"
+            fill
+            alt="img1"
+          />
         </SwiperSlide>
         <SwiperSlide>
-        <Image src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/1234.jpg" fill alt="img1"/>
+          <Image
+            src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/1234.jpg"
+            fill
+            alt="img1"
+          />
         </SwiperSlide>
         <SwiperSlide>
-        <Image src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/3211.jpg" fill alt="img1"/>
+          <Image
+            src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/3211.jpg"
+            fill
+            alt="img1"
+          />
         </SwiperSlide>
       </Swiper>
     </>

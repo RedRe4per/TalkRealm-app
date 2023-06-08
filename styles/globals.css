@@ -14,7 +14,7 @@
   }
 
   .swiper {
-    @apply w-[350px] h-[350px]
+    @apply w-[350px] h-[350px];
   }
 
   .swiper-slide {
@@ -22,6 +22,6 @@
   }
 
   .swiper-slide img {
-    @apply w-full h-full block object-cover object-center
+    @apply w-full h-full block object-cover object-center;
   }
 }

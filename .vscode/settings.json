@@ -7,7 +7,5 @@
   "tailwindCSS.experimental.classRegex": [
     "([\"'])(?:tw|tw-s|tw-state)\\(([^)]+)\\1"
   ],
-  "cSpell.words": [
-    "swiper"
-  ]
+  "cSpell.words": ["swiper"]
 }
