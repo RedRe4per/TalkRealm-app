@@ -50,7 +50,9 @@ export default function Statistic() {
               key={stat.id}
               className="flex flex-col gap-y-3 border-l border-white/10 pl-6"
             >
-              <dt className="text-text-3-standard text-secondary">{stat.name}</dt>
+              <dt className="text-text-3-standard text-secondary">
+                {stat.name}
+              </dt>
               <dd className="order-first text-heading-large-5 tracking-tight text-secondary-100">
                 {stat.value}
               </dd>
