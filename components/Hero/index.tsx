@@ -20,7 +20,7 @@ export default function Hero() {
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
               <h1 className="text-4xl font-bold tracking-tight text-secondary sm:text-6xl">
-                Bridging Distances Through Live Chat
+                Bridging Distances Through Live Chat.
               </h1>
               <p className="mt-6 text-lg leading-8 text-secondary-300">
                 Break the barriers of distance with our live chat feature.
