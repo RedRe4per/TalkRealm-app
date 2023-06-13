@@ -28,7 +28,7 @@ export default function Carousel() {
         spaceBetween={30}
         centeredSlides={true}
         autoplay={{
-          delay: 2500,
+          delay: 3500,
           disableOnInteraction: false,
         }}
         pagination={{
@@ -41,28 +41,28 @@ export default function Carousel() {
       >
         <SwiperSlide>
           <Image
-            src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/123.jpg"
+            src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/chris-montgomery-smgTvepind4-unsplash.jpg"
             fill
             alt="img1"
           />
         </SwiperSlide>
         <SwiperSlide>
           <Image
-            src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/321.jpg"
+            src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/linkedin-sales-solutions-VtKoSy_XzNU-unsplash.jpg"
             fill
             alt="img1"
           />
         </SwiperSlide>
         <SwiperSlide>
           <Image
-            src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/1234.jpg"
+            src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/_111930009_2.medesktop.jpg"
             fill
             alt="img1"
           />
         </SwiperSlide>
         <SwiperSlide>
           <Image
-            src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/3211.jpg"
+            src="https://my-notes-picture-derek-zhu.s3.ap-southeast-2.amazonaws.com/web-development/gabriel-benois-qnWPjzewewA-unsplash.jpg"
             fill
             alt="img1"
           />

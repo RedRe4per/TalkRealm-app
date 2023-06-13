@@ -23,7 +23,7 @@ export default function Hero() {
             <h2 className="text-heading-large-4 tracking-tight text-secondary-100 sm:text-heading-large-5">
               Enhance Your Communication.
               <br />
-              Connect with Our App Today.
+              Connect with Our App Now.
             </h2>
             <p className="mt-6 text-text-3-standard leading-8 text-secondary">
               Revolutionize your virtual meetings with high-quality video calls.
