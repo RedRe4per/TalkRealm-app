@@ -1,15 +1,27 @@
 import { GetServerSidePropsContext } from "next";
 import VideoChat from "@/components/Video/UserMedia";
 import SideBar from "@/components/SideBar";
+import { useState } from "react";
 
 interface Props {
   roomInfo: any;
 }
-export default function Artist(roomInfo: Props) {
+export default function Room(roomInfo: Props) {
+  const [muted, setMuted] = useState(false);
+  const [camera, setCamera] = useState(false);
+  const [shareScreen, setShareScreen] = useState(false);
+
   console.log(roomInfo);
   return (
     <main className="flex">
-      <SideBar />
+      <SideBar
+        muted={muted}
+        setMuted={setMuted}
+        camera={camera}
+        setCamera={setCamera}
+        shareScreen={shareScreen}
+        setShareScreen={setShareScreen}
+      />
       <VideoChat />
     </main>
   );
