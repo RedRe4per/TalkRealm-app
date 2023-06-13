@@ -24,6 +24,10 @@
   .swiper-slide img {
     @apply w-full h-full block object-cover object-center;
   }
+
+  .room-function-bar-button {
+    @apply w-8 h-8 bg-primary-400 rounded-md flex justify-center items-center hover:bg-primary;
+  }
 }
 
 @layer utilities {
@@ -49,5 +53,24 @@
 
   .swiper .swiper-pagination-bullet {
     background: #6577a9 !important;
+  }
+
+  .scrollbar-sidebar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-sidebar::-webkit-scrollbar-track {
+    background-color: #3c486b;
+    mix-blend-mode: difference;
+  }
+
+  .scrollbar-sidebar::-webkit-scrollbar-thumb {
+    background: #3c486b;
+    border-radius: 100vh;
+  }
+
+  .scrollbar-sidebar::-webkit-scrollbar-thumb:hover {
+    background: #6577a9;
   }
 }
