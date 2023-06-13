@@ -1,18 +1,18 @@
 import React, { useEffect, useRef } from "react";
 
 interface Props {
-    muted: boolean;
-    camera: boolean;
-    shareScreen: boolean;
-  }
+  muted: boolean;
+  camera: boolean;
+  shareScreen: boolean;
+}
 
-const VideoChat =  React.forwardRef(( {muted, camera, shareScreen}: Props, screenRef: any ) => {
+export const VideoChat = ({ muted, camera, shareScreen }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-//   const screenRef = useRef<HTMLVideoElement>(null);
+  const screenRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null); // 创建一个新的 useRef 用于预览视频
 
   useEffect(() => {
-    console.log(muted, "muted", camera, "camera")
+    console.log(muted, "muted", camera, "camera");
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
       const config = { video: camera, audio: muted };
 
@@ -33,18 +33,39 @@ const VideoChat =  React.forwardRef(( {muted, camera, shareScreen}: Props, scree
     }
   }, [muted, camera]);
 
-//   const startScreenShare = async () => {
-//     if ('mediaDevices' in navigator && 'getDisplayMedia' in navigator.mediaDevices) {
-//       try {
-//         const screenStream = await navigator.mediaDevices.getDisplayMedia({video: true});
-//         if (screenRef.current) {
-//           screenRef.current.srcObject = screenStream;
-//         }
-//       } catch(err) {
-//         console.error("Error: " + err);
-//       }
-//     }
-//   };
+  useEffect(() => {
+    const startScreenShare = async () => {
+      if (
+        "mediaDevices" in navigator &&
+        "getDisplayMedia" in navigator.mediaDevices
+      ) {
+        try {
+          const screenStream = await navigator.mediaDevices.getDisplayMedia({
+            video: true,
+          });
+          if (screenRef.current) {
+            screenRef.current.srcObject = screenStream;
+          }
+        } catch (err) {
+          console.error("Error: " + err);
+        }
+      }
+    };
+
+    const stopScreenShare = () => {
+      if (screenRef.current && screenRef.current.srcObject) {
+        let tracks = (screenRef.current.srcObject as MediaStream).getTracks();
+        tracks.forEach((track) => track.stop());
+        screenRef.current.srcObject = null;
+      }
+    };
+
+    if (shareScreen) {
+      startScreenShare();
+    } else {
+      stopScreenShare();
+    }
+  }, [shareScreen]);
 
   return (
     <div className="video-chat">
@@ -55,9 +76,4 @@ const VideoChat =  React.forwardRef(( {muted, camera, shareScreen}: Props, scree
       <video className="w-[60vw]" ref={screenRef} autoPlay playsInline />
     </div>
   );
-});
-
-VideoChat.displayName="VideoChat";
-
-export default VideoChat;
-
+};
