@@ -14,7 +14,7 @@
   }
 
   .swiper {
-    @apply w-[350px] h-[350px];
+    @apply w-[684px] h-[405px];
   }
 
   .swiper-slide {
