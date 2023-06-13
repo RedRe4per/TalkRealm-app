@@ -1,15 +1,37 @@
 import { GetServerSidePropsContext } from "next";
 import VideoChat from "@/components/Video/UserMedia";
 import SideBar from "@/components/SideBar";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 interface Props {
   roomInfo: any;
 }
 export default function Room(roomInfo: Props) {
+  const screenRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(false);
   const [camera, setCamera] = useState(false);
   const [shareScreen, setShareScreen] = useState(false);
+
+  const startScreenShare = async () => {
+    if ('mediaDevices' in navigator && 'getDisplayMedia' in navigator.mediaDevices) {
+      try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({video: true});
+        if (screenRef.current) {
+          screenRef.current.srcObject = screenStream;
+        }
+      } catch(err) {
+        console.error("Error: " + err);
+      }
+    }
+  };
+
+  const stopScreenShare = () => {
+    if (screenRef.current && screenRef.current.srcObject) {
+      let tracks = (screenRef.current.srcObject as MediaStream).getTracks();
+      tracks.forEach(track => track.stop());
+      screenRef.current.srcObject = null;
+    }
+  };
 
   console.log(roomInfo);
   return (
@@ -21,8 +43,15 @@ export default function Room(roomInfo: Props) {
         setCamera={setCamera}
         shareScreen={shareScreen}
         setShareScreen={setShareScreen}
+        startScreenShare={startScreenShare}
+        stopScreenShare={stopScreenShare}
       />
-      <VideoChat />
+      <VideoChat
+      muted={muted}
+      camera={camera}
+      shareScreen={shareScreen}
+      ref={screenRef}
+       />
     </main>
   );
 }

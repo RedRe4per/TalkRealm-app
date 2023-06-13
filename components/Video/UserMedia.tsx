@@ -1,12 +1,20 @@
 import React, { useEffect, useRef } from "react";
 
-const VideoChat: React.FC = () => {
+interface Props {
+    muted: boolean;
+    camera: boolean;
+    shareScreen: boolean;
+  }
+
+const VideoChat =  React.forwardRef(( {muted, camera, shareScreen}: Props, screenRef: any ) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+//   const screenRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null); // 创建一个新的 useRef 用于预览视频
 
   useEffect(() => {
+    console.log(muted, "muted", camera, "camera")
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
-      const config = { video: true, audio: true };
+      const config = { video: camera, audio: muted };
 
       navigator.mediaDevices
         .getUserMedia(config)
@@ -23,7 +31,20 @@ const VideoChat: React.FC = () => {
           console.error("Error accessing media devices.", err);
         });
     }
-  }, []);
+  }, [muted, camera]);
+
+//   const startScreenShare = async () => {
+//     if ('mediaDevices' in navigator && 'getDisplayMedia' in navigator.mediaDevices) {
+//       try {
+//         const screenStream = await navigator.mediaDevices.getDisplayMedia({video: true});
+//         if (screenRef.current) {
+//           screenRef.current.srcObject = screenStream;
+//         }
+//       } catch(err) {
+//         console.error("Error: " + err);
+//       }
+//     }
+//   };
 
   return (
     <div className="video-chat">
@@ -31,8 +52,12 @@ const VideoChat: React.FC = () => {
       <div className="preview-video w-[220px]">
         <video ref={previewRef} autoPlay playsInline /> {/* 添加预览视频 */}
       </div>
+      <video className="w-[60vw]" ref={screenRef} autoPlay playsInline />
     </div>
   );
-};
+});
+
+VideoChat.displayName="VideoChat";
 
 export default VideoChat;
+
