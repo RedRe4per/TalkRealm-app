@@ -2,7 +2,7 @@ import { GetServerSidePropsContext } from "next";
 import { VideoChat } from "@/components/Video/UserMedia";
 import SideBar from "@/components/SideBar";
 import { useState, useEffect } from "react";
-import io from 'socket.io-client';
+import io from "socket.io-client";
 
 interface Props {
   roomInfo: any;
@@ -11,13 +11,27 @@ export default function Room(roomInfo: Props) {
   const [muted, setMuted] = useState(false);
   const [camera, setCamera] = useState(false);
   const [shareScreen, setShareScreen] = useState(false);
+  const [socket, setSocket] = useState<any>(null);
 
   useEffect(() => {
-    const socket = io(`${process.env.NEXT_PUBLIC_SERVER_ADDRESS}`);
+    const socketIo = io(`${process.env.NEXT_PUBLIC_SERVER_ADDRESS}`);
+
+    socketIo.on("message", (message) => {
+      console.log(message);
+    });
+
+    setSocket(socketIo);
+
     return () => {
-      socket.disconnect();
-    }
+      socketIo.disconnect();
+    };
   }, []);
+
+  const handleMessage = () => {
+    if (socket) {
+      socket.emit("message", "Hello from client!");
+    }
+  };
 
   console.log(roomInfo);
   return (
@@ -30,7 +44,12 @@ export default function Room(roomInfo: Props) {
         shareScreen={shareScreen}
         setShareScreen={setShareScreen}
       />
-      <VideoChat muted={muted} camera={camera} shareScreen={shareScreen} />
+      <section>
+        <button className="text-quaternary" onClick={handleMessage}>
+          send message
+        </button>
+        <VideoChat muted={muted} camera={camera} shareScreen={shareScreen} />
+      </section>
     </main>
   );
 }
