@@ -1,7 +1,8 @@
 import { GetServerSidePropsContext } from "next";
 import { VideoChat } from "@/components/Video/UserMedia";
 import SideBar from "@/components/SideBar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import io from 'socket.io-client';
 
 interface Props {
   roomInfo: any;
@@ -10,6 +11,13 @@ export default function Room(roomInfo: Props) {
   const [muted, setMuted] = useState(false);
   const [camera, setCamera] = useState(false);
   const [shareScreen, setShareScreen] = useState(false);
+
+  useEffect(() => {
+    const socket = io(`${process.env.NEXT_PUBLIC_SERVER_ADDRESS}`);
+    return () => {
+      socket.disconnect();
+    }
+  }, []);
 
   console.log(roomInfo);
   return (

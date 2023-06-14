@@ -69,7 +69,7 @@ export const VideoChat = ({ muted, camera, shareScreen }: Props) => {
 
   return (
     <div className="video-chat">
-      <video ref={videoRef} autoPlay playsInline />
+      <video className="w-[60vw]" ref={videoRef} autoPlay playsInline />
       <div className="preview-video w-[220px]">
         <video ref={previewRef} autoPlay playsInline /> {/* 添加预览视频 */}
       </div>
