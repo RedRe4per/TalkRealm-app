@@ -4,34 +4,49 @@ interface Props {
   muted: boolean;
   camera: boolean;
   shareScreen: boolean;
+  socket: any;
+  peer: any;
+  cameraStates: any;
 }
 
-export const VideoChat = ({ muted, camera, shareScreen }: Props) => {
+export const VideoChat = ({ muted, camera, shareScreen, socket, peer,cameraStates }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const screenRef = useRef<HTMLVideoElement>(null);
-  const previewRef = useRef<HTMLVideoElement>(null); // 创建一个新的 useRef 用于预览视频
+  const previewRef = useRef<HTMLVideoElement>(null); 
+
+  const connectToNewUser = (userId: string, stream: any) => { //call user并且把本机stream发过去。
+    console.log("connectToNewUser")
+    const call = peer.call(userId, stream);
+    call.on('stream', (userVideoStream: any) => {
+      if (videoRef.current && cameraStates[userId]) {
+        videoRef.current.srcObject = userVideoStream;
+      }
+    })
+    call.on('close', ()=>{
+      videoRef.current?.remove();
+    })
+  }
 
   useEffect(() => {
-    console.log(muted, "muted", camera, "camera");
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
       const config = { video: camera, audio: muted };
 
       navigator.mediaDevices
         .getUserMedia(config)
         .then((stream) => {
-          // 同样将媒体流与预览视频关联
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-          }
           if (previewRef.current) {
             previewRef.current.srcObject = stream.clone();
           }
+          socket.on('user-connected', (userId: string) => { //当新用户连接时
+            console.log("connected to userId", userId)
+            connectToNewUser(userId, stream)
+          })
         })
         .catch((err) => {
           console.error("Error accessing media devices.", err);
         });
     }
-  }, [muted, camera]);
+  }, [muted, camera, socket]);
 
   useEffect(() => {
     const startScreenShare = async () => {
@@ -69,11 +84,12 @@ export const VideoChat = ({ muted, camera, shareScreen }: Props) => {
 
   return (
     <div className="video-chat">
-      <video className="w-[60vw]" ref={videoRef} autoPlay playsInline />
+      <video className="w-[40vw]" ref={videoRef} autoPlay playsInline />
+      <video className="w-[40vw]" ref={screenRef} autoPlay playsInline />
       <div className="preview-video w-[220px]">
-        <video ref={previewRef} autoPlay playsInline /> {/* 添加预览视频 */}
+        <p className="text-primary-400">preview video</p>
+        <video ref={previewRef} autoPlay muted playsInline />
       </div>
-      <video className="w-[60vw]" ref={screenRef} autoPlay playsInline />
     </div>
   );
 };

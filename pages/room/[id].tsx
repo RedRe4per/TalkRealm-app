@@ -1,7 +1,7 @@
 import { GetServerSidePropsContext } from "next";
 import { VideoChat } from "@/components/Video/UserMedia";
 import SideBar from "@/components/SideBar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 
 interface Props {
@@ -11,87 +11,64 @@ export default function Room(roomInfo: Props) {
   const [muted, setMuted] = useState(false);
   const [camera, setCamera] = useState(false);
   const [shareScreen, setShareScreen] = useState(false);
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [pc, setPc] = useState<RTCPeerConnection | null>(null);
+  const [peer, setPeer] = useState<any>(null);
+  const [cameraStates, setCameraStates] = useState<{ [userId: string]: boolean }>({});
+  let socketIo: Socket = io(`${process.env.NEXT_PUBLIC_SERVER_ADDRESS}`);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setPc(new RTCPeerConnection());
-    }
-  }, []);
-
-  // useEffect(() => {
-  //   if (typeof window !== 'undefined' && pc) {
-  
-  //     pc.onicecandidate = (event) => {
-  //       if (event.candidate && socket) {
-  //         socket.emit('ice-candidate', event.candidate);
-  //       }
-  //     };
-  
-  //     setPc(pc);
-  //   }
-  // }, []);
-
-  useEffect(() => {
-    if (pc === null) {
-      return;
-    }
-
-    const socketIo = io(`${process.env.NEXT_PUBLIC_SERVER_ADDRESS}`);
-
     socketIo.on("message", (message) => {
       console.log(message);
     });
 
-    
-      socketIo.on('offer', async (offer) => {
-        console.log('Offer received');
-        await pc.setRemoteDescription(offer);
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        socketIo.emit('answer', answer);
+    socketIo.on("camera-state-changed", (userId: string, newCameraState: boolean) => {
+      // 当收到 "camera-state-changed" 事件时，更新 cameraStates 对象
+      setCameraStates((prevState) => ({ ...prevState, [userId]: newCameraState }));
+    });
+
+    import('peerjs').then(({ default: Peer }) => {
+      const peer = new Peer();
+      setPeer(peer);
+
+      peer.on('open', id => { //在 Peer 对象与 PeerServer 成功建立连接时触发的
+        console.log('My peer ID is: ' + id, socketIo);
+        socketIo.emit("user-connected", id);
       });
   
-      socketIo.on('answer', async (answer) => {
-        console.log('Answer received');
-        await pc.setRemoteDescription(answer);
+      peer.on('connection', conn => {
+        conn.on('data', data => {
+          console.log(data);
+        });
+      });
+  
+      peer.on('call', call => {
+        
       });
 
-      // socketIo.on('ice-candidate', async (candidate) => {
-      //   if (pc) {
-      //     try {
-      //       await pc.addIceCandidate(candidate);
-      //     } catch (e) {
-      //       console.error('Error adding received ice candidate', e);
-      //     }
-      //   }
-      // });
-    
+      navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+          .then(stream => {
+            
+          });
+  
+      return () => {
+        socketIo.disconnect();
+        peer.destroy();
+      };
+    });
+  }, [])
 
-    setSocket(socketIo);
-
-    return () => {
-      socketIo.disconnect();
-    };
-  }, [pc]);
+  const handleCameraChange = () => {
+    const newCameraState = !camera;
+    setCamera(newCameraState);
+    // 当用户切换摄像头状态时，发送 "camera-state-changed" 事件
+    socketIo.emit("camera-state-changed", peer.id, newCameraState);
+  };
 
   const handleMessage = () => {
-    if (socket) {
-      socket.emit("message", "Hello from client!");
+    if (socketIo) {
+      socketIo.emit("message", "Hello from client!");
     }
   };
 
-  const handleCreateOffer = async () => {
-    if (socket && pc) {
-      console.log('Creating offer');
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      socket.emit("offer", offer);
-    }
-  };
-
-  console.log(roomInfo);
   return (
     <main className="flex">
       <SideBar
@@ -101,15 +78,13 @@ export default function Room(roomInfo: Props) {
         setCamera={setCamera}
         shareScreen={shareScreen}
         setShareScreen={setShareScreen}
+        handleCameraChange={handleCameraChange}
       />
       <section>
         <button className="text-quaternary" onClick={handleMessage}>
           send message
         </button>
-        <button className="text-green-500" onClick={handleCreateOffer}>
-          create offer 
-        </button>
-        <VideoChat muted={muted} camera={camera} shareScreen={shareScreen} />
+        <VideoChat muted={muted} camera={camera} shareScreen={shareScreen} socket={socketIo} peer={peer} cameraStates={cameraStates}/>
       </section>
     </main>
   );
