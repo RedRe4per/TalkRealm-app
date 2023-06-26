@@ -6,26 +6,32 @@ interface Props {
   shareScreen: boolean;
   socket: any;
   peer: any;
-  cameraStates: any;
 }
 
-export const VideoChat = ({ muted, camera, shareScreen, socket, peer,cameraStates }: Props) => {
+export const VideoChat = ({
+  muted,
+  camera,
+  shareScreen,
+  socket,
+  peer,
+}: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const screenRef = useRef<HTMLVideoElement>(null);
-  const previewRef = useRef<HTMLVideoElement>(null); 
+  const previewRef = useRef<HTMLVideoElement>(null);
 
-  const connectToNewUser = (userId: string, stream: any) => { //call user并且把本机stream发过去。
-    console.log("connectToNewUser")
+  const connectToNewUser = (userId: string, stream: any) => {
+    //call user并且把本机stream发过去。
+    console.log("connectToNewUser");
     const call = peer.call(userId, stream);
-    call.on('stream', (userVideoStream: any) => {
-      if (videoRef.current && cameraStates[userId]) {
+    call.on("stream", (userVideoStream: any) => {
+      if (videoRef.current) {
         videoRef.current.srcObject = userVideoStream;
       }
-    })
-    call.on('close', ()=>{
+    });
+    call.on("close", () => {
       videoRef.current?.remove();
-    })
-  }
+    });
+  };
 
   useEffect(() => {
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
@@ -35,12 +41,23 @@ export const VideoChat = ({ muted, camera, shareScreen, socket, peer,cameraState
         .getUserMedia(config)
         .then((stream) => {
           if (previewRef.current) {
-            previewRef.current.srcObject = stream.clone();
+            previewRef.current.srcObject = stream; //.clone()
           }
-          socket.on('user-connected', (userId: string) => { //当新用户连接时
-            console.log("connected to userId", userId)
-            connectToNewUser(userId, stream)
-          })
+          socket.on("user-connected", (userId: string) => {
+            //当新用户连接时
+            console.log("connected to userId", userId);
+            connectToNewUser(userId, stream);
+          });
+
+          peer.on("call", (call: any) => {
+            console.log("peer call")
+            call.answer(stream);
+            call.on('stream', function(remoteStream: any) {
+              if (videoRef.current) {
+                videoRef.current.srcObject = remoteStream;
+              }
+            });
+          });
         })
         .catch((err) => {
           console.error("Error accessing media devices.", err);

@@ -14,7 +14,6 @@ interface Props {
   setCamera: (param: boolean) => void;
   shareScreen: boolean;
   setShareScreen: (param: boolean) => void;
-  handleCameraChange: any
 }
 
 export default function FunctionBar({
@@ -24,13 +23,7 @@ export default function FunctionBar({
   setCamera,
   shareScreen,
   setShareScreen,
-  handleCameraChange
 }: Props) {
-
-  const handleA = () => {
-    setCamera(!camera)
-    handleCameraChange()
-  }
   return (
     <section className="fixed bg-primary-400 bottom-0 h-16 w-[240px] p-4">
       <ul className="menu bg-base-200 rounded-box flex justify-around">
@@ -52,7 +45,7 @@ export default function FunctionBar({
             className={`${
               camera ? "bg-quaternary" : "bg-primary-400 hover:bg-primary"
             } room-function-bar-button`}
-            onClick={handleA}
+            onClick={()=>setCamera(!camera)}
           >
             <VideoCameraIcon
               className="h-5 w-5 text-secondary"

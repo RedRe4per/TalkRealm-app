@@ -9,7 +9,6 @@ interface Props {
   setCamera: (param: boolean) => void;
   shareScreen: boolean;
   setShareScreen: (param: boolean) => void;
-  handleCameraChange: any
 }
 
 export default function SideBar({
@@ -19,7 +18,6 @@ export default function SideBar({
   setCamera,
   shareScreen,
   setShareScreen,
-  handleCameraChange
 }: Props) {
   return (
     <section className="max-w-[240px] h-[92.7vh] relative scrollbar-sidebar flex grow flex-col gap-y-5 overflow-y-auto border-r border-primary-100 bg-primary">
@@ -32,7 +30,6 @@ export default function SideBar({
         setCamera={setCamera}
         shareScreen={shareScreen}
         setShareScreen={setShareScreen}
-        handleCameraChange={handleCameraChange}
       />
     </section>
   );
