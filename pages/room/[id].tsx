@@ -24,20 +24,13 @@ export default function Room(roomInfo: Props) {
       setPeer(peer);
 
       peer.on("open", (id) => {
-        //在 Peer 对象与 PeerServer 成功建立连接时触发的
         console.log("My peer ID is: " + id, socketIo);
-        socketIo.emit("user-connected", id);
+        socketIo.emit("I-connected", id);
       });
 
-      // peer.on("connection", (conn) => {
-      //   conn.on("data", (data) => {
-      //     console.log(data);
-      //   });
-      // });
-
-      navigator.mediaDevices
-        .getUserMedia({ video: true, audio: true })
-        .then((stream) => {});
+      // navigator.mediaDevices
+      //   .getUserMedia({ video: true, audio: true })
+      //   .then((stream) => {});
 
       return () => {
         socketIo.disconnect();
