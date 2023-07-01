@@ -22,7 +22,7 @@ export default function Nav() {
                 </div>
                 <div className="hidden lg:ml-6 lg:block">
                   <ul className="flex space-x-4">
-                    <PageLink href="#" pageName="home" />
+                    <PageLink href="http://localhost:3000" pageName="home" />
                     <PageLink href="#" pageName="gallery" />
                     <PageLink href="#" pageName="create room" />
                     <PageLink href="#" pageName="vote" />

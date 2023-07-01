@@ -7,6 +7,8 @@ interface Props {
   socket: any;
   peer: any;
   peers: any;
+  userList: any;
+  setUserList: any;
 }
 
 export const VideoChat = ({
@@ -16,6 +18,8 @@ export const VideoChat = ({
   socket,
   peer,
   peers,
+  userList,
+  setUserList,
 }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const screenRef = useRef<HTMLVideoElement>(null);
@@ -164,8 +168,7 @@ export const VideoChat = ({
   useEffect(() => {
     //新用户登入room时连接。无论任何状态，都发送stream。
     if (peer && camera) {
-      socket.on("user-connected", (userId: string) => {
-        console.log("connected to userId", userId, "peer id:", peer.id);
+      socket.on("user-connected", ({ userId: userId, users: users }: any) => {
         shareVideo(userId);
       });
     }
@@ -173,6 +176,8 @@ export const VideoChat = ({
 
   useEffect(() => {
     //开摄像头时，打开本地preview。2.关闭目前的空单向stream。3.重新建立peer.call，把本地stream发送给room内所有人。
+    //此处需要满足需求：假设客户端A打开页面时没有share video，客户端B打开时也没有share video。此时客户端A打开share video，客户端B需要能接收到。
+    //因此，需要率先获得全房间所有userId，然后遍历shareVideo。
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
       const config = { video: camera, audio: muted };
 
@@ -222,8 +227,8 @@ export const VideoChat = ({
           }
         });
 
-        call.on('close', function() {
-          console.log("peer close")
+        call.on("close", function () {
+          console.log("peer close");
           call.close();
         });
       });

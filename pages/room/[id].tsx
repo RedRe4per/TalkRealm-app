@@ -3,62 +3,72 @@ import { VideoChat } from "@/components/Video/UserMedia";
 import SideBar from "@/components/SideBar";
 import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
+import useBeforeUnload from "@/hooks/useBeforeUnload";
 
 interface Props {
   roomInfo: any;
 }
+
+type UserList = {
+  userId: string;
+  userName: string;
+};
+
 export default function Room(roomInfo: Props) {
   const [muted, setMuted] = useState(false);
   const [camera, setCamera] = useState(false);
   const [shareScreen, setShareScreen] = useState(false);
   const [peer, setPeer] = useState<any>(null);
+  const [userList, setUserList] = useState<UserList[]>([]);
   let socketIo: Socket = io(`${process.env.NEXT_PUBLIC_SERVER_ADDRESS}`);
+  let myPeerId: string = "";
   const peers = {};
+  useBeforeUnload();
 
   useEffect(() => {
     socketIo.on("message", (message) => {
       console.log(message);
     });
 
+    socketIo.on("user-connected", ({ userId: userId, users: users }: any) => {
+      setUserList(users);
+    });
+
+    socketIo.on(
+      "user-disconnected",
+      ({ userId: userId, users: users }: any) => {
+        setUserList(users);
+      }
+    );
+
     import("peerjs").then(({ default: Peer }) => {
       const peer = new Peer();
       setPeer(peer);
 
-      peer.on("open", (id) => {
+      peer.on("open", (id: string) => {
         console.log("My peer ID is: " + id, socketIo);
         socketIo.emit("I-connected", id);
+        myPeerId = id;
       });
 
-      // navigator.mediaDevices
-      //   .getUserMedia({ video: true, audio: true })
-      //   .then((stream) => {});
-
-      return () => {
-        socketIo.disconnect();
-        peer.destroy();
-      };
+      // return () => {
+      //   socketIo.emit("I-disconnect", peer.id);
+      //   socketIo.disconnect();
+      //   peer.destroy();
+      // };
     });
 
     return () => {
-      socketIo.emit("I-disconnect", peer.id);
+      socketIo.emit("I-disconnect", myPeerId);
     };
   }, []);
 
-  // useEffect(() => {
-  //   const handleBeforeUnload = (event: any) => {
-  //     // 发送socketIo事件
-  //     socketIo.emit("I-disconnect", peer.id);
-  //   };
-
-  //   window.addEventListener('beforeunload', handleBeforeUnload);
-
-  //   // 在组件卸载时移除事件监听器
-  //   return () => {
-  //     window.removeEventListener('beforeunload', handleBeforeUnload);
-  //   };
-  // }, [socketIo, peer]);
+  useEffect(() => {
+    console.log("userList", userList);
+  }, [userList]);
 
   const handleMessage = () => {
+    console.log("userList", userList);
     if (socketIo) {
       socketIo.emit("message", "Hello from client!");
     }
@@ -85,6 +95,8 @@ export default function Room(roomInfo: Props) {
           socket={socketIo}
           peer={peer}
           peers={peers}
+          userList={userList}
+          setUserList={setUserList}
         />
       </section>
     </main>
