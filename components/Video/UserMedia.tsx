@@ -23,6 +23,7 @@ export const VideoChat = ({
   const screenRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
   const [localStream, setLocalStream] = useState<any>(null);
+  const [remoteStreams, setRemoteStreams] = useState<any>([]);
   const [remoteUserId, setRemoteUserId] = useState<string>("");
   const [currentCall, setCurrentCall] = useState<any>(null);
   const [localVideoStreamId, setLocalVideoStreamId] = useState("");
@@ -217,12 +218,17 @@ export const VideoChat = ({
           call.answer(localStream);
         }
         call.on("stream", function (remoteStream: any) {
-          if (videoRef.current) {
-            console.log("get remote stream test2", remoteStream);
-            videoRef.current.srcObject = remoteStream;
-            const a = remoteStream.getTracks();
-            console.log("track", a);
-          }
+          const newStream = {
+            id: call.peer,
+            stream: remoteStream,
+          };
+          setRemoteStreams((prevStreams: any) => [...prevStreams, newStream]);
+          // if (videoRef.current) {
+          //   console.log("get remote stream test2", remoteStream);
+          //   videoRef.current.srcObject = remoteStream;
+          //   const a = remoteStream.getTracks();
+          //   console.log("track", a);
+          // }
         });
 
         call.on("close", function () {
@@ -236,20 +242,48 @@ export const VideoChat = ({
   return (
     <div>
       <section>
-        <ul className="flex gap-2 p-4 bg-primary-100">
+        <ul className="flex gap-3 p-4 bg-primary-100">
           {userList.map((user: any) => {
             return (
-              <li
-                className="w-[180px] h-[136px] bg-primary-400 text-secondary rounded-xl"
-                key={user}
-              >
-                {user}
-              </li>
+              <div key={user}>
+                {remoteStreams.findIndex(
+                  (remoteStream: any) => remoteStream.id === user
+                ) < 0 ? (
+                  <li className="w-[180px] h-[136px] px-3 py-2 bg-primary-400 text-secondary rounded-xl border-2 border-secondary-400">
+                    {user}
+                  </li>
+                ) : (
+                  <video
+                    key={user}
+                    className="w-[180px] h-[136px] rounded-xl border-2 border-secondary-400"
+                    ref={(ref) =>
+                      ref &&
+                      (ref.srcObject = remoteStreams.find(
+                        (item: any) => item.id === user
+                      )?.stream)
+                    }
+                    autoPlay
+                    playsInline
+                    muted
+                  />
+                )}
+              </div>
             );
           })}
         </ul>
       </section>
-      <video className="w-[40vw]" ref={videoRef} autoPlay playsInline muted />
+      <section>
+        {remoteStreams.map((streamObj: any, index: number) => (
+          <video
+            key={index}
+            className="w-[40vw]"
+            ref={(ref) => ref && (ref.srcObject = streamObj.stream)}
+            autoPlay
+            playsInline
+            muted
+          />
+        ))}
+      </section>
       <video className="w-[40vw]" ref={screenRef} autoPlay playsInline />
       <div className="preview-video w-[220px]">
         <p className="text-primary-400">preview video</p>
