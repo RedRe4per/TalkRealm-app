@@ -50,16 +50,14 @@ export default function Room(roomInfo: Props) {
         socketIo.emit("I-connected", id);
         myPeerId = id;
       });
-
-      // return () => {
-      //   socketIo.emit("I-disconnect", peer.id);
-      //   socketIo.disconnect();
-      //   peer.destroy();
-      // };
     });
 
     return () => {
       socketIo.emit("I-disconnect", myPeerId);
+      socketIo.disconnect();
+      if (peer) {
+        peer.destroy();
+      }
     };
   }, []);
 
@@ -77,6 +75,7 @@ export default function Room(roomInfo: Props) {
   return (
     <main className="flex">
       <SideBar
+        userList={userList}
         muted={muted}
         setMuted={setMuted}
         camera={camera}
@@ -84,10 +83,10 @@ export default function Room(roomInfo: Props) {
         shareScreen={shareScreen}
         setShareScreen={setShareScreen}
       />
-      <section>
-        <button className="text-quaternary" onClick={handleMessage}>
+      <section className="flex-grow">
+        {/* <button className="text-quaternary" onClick={handleMessage}>
           send message
-        </button>
+        </button> */}
         <VideoChat
           muted={muted}
           camera={camera}
@@ -96,7 +95,6 @@ export default function Room(roomInfo: Props) {
           peer={peer}
           peers={peers}
           userList={userList}
-          setUserList={setUserList}
         />
       </section>
     </main>

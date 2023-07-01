@@ -31,68 +31,19 @@ function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function ChannelBar() {
+export default function ChannelBar({ userList }: any) {
   return (
     <div className="scrollbar-sidebar mt-20 flex grow flex-col gap-y-5 overflow-y-auto border-r border-primary-100 bg-primary px-6">
       <nav className="flex flex-1 flex-col">
         <ul role="list" className="flex flex-1 flex-col gap-y-7">
           <li>
-            <ul role="list" className="-mx-2 space-y-1">
-              {navigation.map((item: any) => (
-                <li key={item.name}>
-                  {!item.children ? (
-                    <a
-                      href={item.href}
-                      className={classNames(
-                        item.current
-                          ? "bg-primary-200"
-                          : "hover:bg-primary-200",
-                        "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold text-secondary"
-                      )}
-                    >
-                      {item.name}
-                    </a>
-                  ) : (
-                    <Disclosure as="div">
-                      {({ open }) => (
-                        <>
-                          <Disclosure.Button
-                            className={classNames(
-                              item.current ? "bg-gray-50" : "hover:bg-gray-50",
-                              "flex items-center w-full text-left rounded-md p-2 gap-x-3 text-sm leading-6 font-semibold text-secondary"
-                            )}
-                          >
-                            {item.name}
-                            <ChevronRightIcon
-                              className={classNames(
-                                open
-                                  ? "rotate-90 text-secondary-300"
-                                  : "text-secondary",
-                                "ml-auto h-5 w-5 shrink-0"
-                              )}
-                              aria-hidden="true"
-                            />
-                          </Disclosure.Button>
-                          <Disclosure.Panel as="ul" className="mt-1 px-2">
-                            {item.children.map((subItem: any) => (
-                              <li key={subItem.name}>
-                                {/* 44px */}
-                                <Disclosure.Button
-                                  as="a"
-                                  href={subItem.href}
-                                  className={
-                                    "block rounded-md py-2 pr-2 pl-9 bg-gray-50 text-sm leading-6 text-secondary-100"
-                                  }
-                                >
-                                  {subItem.name}
-                                </Disclosure.Button>
-                              </li>
-                            ))}
-                          </Disclosure.Panel>
-                        </>
-                      )}
-                    </Disclosure>
-                  )}
+            <ul role="list" className="-mx-2 space-y-1 flex flex-col gap-1">
+              {userList.map((user: any) => (
+                <li
+                  className="p-2 hover:bg-primary-200 rounded-md text-secondary-100 text-heading-small-7-standard whitespace-nowrap overflow-hidden text-ellipsis"
+                  key={user}
+                >
+                  {user}
                 </li>
               ))}
             </ul>

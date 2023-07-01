@@ -8,7 +8,6 @@ interface Props {
   peer: any;
   peers: any;
   userList: any;
-  setUserList: any;
 }
 
 export const VideoChat = ({
@@ -19,7 +18,6 @@ export const VideoChat = ({
   peer,
   peers,
   userList,
-  setUserList,
 }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const screenRef = useRef<HTMLVideoElement>(null);
@@ -236,7 +234,21 @@ export const VideoChat = ({
   }, [peer, camera]);
 
   return (
-    <div className="video-chat">
+    <div>
+      <section>
+        <ul className="flex gap-2 p-4 bg-primary-100">
+          {userList.map((user: any) => {
+            return (
+              <li
+                className="w-[180px] h-[136px] bg-primary-400 text-secondary rounded-xl"
+                key={user}
+              >
+                {user}
+              </li>
+            );
+          })}
+        </ul>
+      </section>
       <video className="w-[40vw]" ref={videoRef} autoPlay playsInline muted />
       <video className="w-[40vw]" ref={screenRef} autoPlay playsInline />
       <div className="preview-video w-[220px]">
