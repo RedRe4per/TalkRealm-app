@@ -13,6 +13,7 @@ export default function Room(roomInfo: Props) {
   const [shareScreen, setShareScreen] = useState(false);
   const [peer, setPeer] = useState<any>(null);
   let socketIo: Socket = io(`${process.env.NEXT_PUBLIC_SERVER_ADDRESS}`);
+  const peers = {};
 
   useEffect(() => {
     socketIo.on("message", (message) => {
@@ -37,7 +38,25 @@ export default function Room(roomInfo: Props) {
         peer.destroy();
       };
     });
+
+    return(()=>{
+      socketIo.emit("I-disconnect", peer.id);
+    })
   }, []);
+
+  // useEffect(() => {
+  //   const handleBeforeUnload = (event: any) => {
+  //     // 发送socketIo事件
+  //     socketIo.emit("I-disconnect", peer.id);
+  //   };
+
+  //   window.addEventListener('beforeunload', handleBeforeUnload);
+
+  //   // 在组件卸载时移除事件监听器
+  //   return () => {
+  //     window.removeEventListener('beforeunload', handleBeforeUnload);
+  //   };
+  // }, [socketIo, peer]);  
 
   const handleMessage = () => {
     if (socketIo) {
@@ -65,6 +84,7 @@ export default function Room(roomInfo: Props) {
           shareScreen={shareScreen}
           socket={socketIo}
           peer={peer}
+          peers={peers}
         />
       </section>
     </main>

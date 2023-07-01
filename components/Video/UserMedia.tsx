@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface Props {
   muted: boolean;
@@ -6,6 +6,7 @@ interface Props {
   shareScreen: boolean;
   socket: any;
   peer: any;
+  peers: any;
 }
 
 export const VideoChat = ({
@@ -14,10 +15,13 @@ export const VideoChat = ({
   shareScreen,
   socket,
   peer,
+  peers,
 }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const screenRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
+  const [localVideoStreamId, setLocalVideoStreamId] = useState('');
+  const [remoteUserId, setRemoteUserId] = useState('');
 
   // const connectToNewUser = (userId: string, stream: any) => {
   //   //call user并且把本机stream发过去。
@@ -135,22 +139,17 @@ export const VideoChat = ({
   
 
   const shareVideo = (userId: string) => {
+    //if(userId !== peer.id){
        if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
-      const config = { video: camera, audio: muted };
+      const config = { video: true, audio: muted }; //此处找到之前的bug。如果把video的value设置为状态变量，会导致状态变化时此处不变化。
 
-      console.log("shared video to user", userId)
+      console.log("shared video to user", userId, "camera1:", camera)
       navigator.mediaDevices
         .getUserMedia(config)
         .then((stream) => {
-          if (previewRef.current) {
-            previewRef.current.srcObject = stream; //.clone()
-          }
+          console.log("local stream from connected to new user", stream)
           const call = peer.call(userId, stream);
-              // call.on("stream", (userVideoStream: any) => {
-              //   // if (videoRef.current) {
-              //   //   videoRef.current.srcObject = userVideoStream;
-              //   // }
-              // });
+          peers[userId] = call;
               call.on("close", () => {
                 videoRef.current?.remove();
               });
@@ -160,13 +159,17 @@ export const VideoChat = ({
         });
     }
   }
+  //}
 
   useEffect(()=>{ //新用户登入room时连接。无论任何状态，都发送stream。
+    if(peer && camera){ //此处加上 &&camera 后就无法再显示remote stream。可能原因是远程stream中选用的是本地stream？如果
+      //是这样，那么此代码逻辑彻底错误；但是通过招手测试，两个stream是不同的。 
       socket.on("user-connected", (userId: string) => {
-      console.log("connected to userId", userId);
+      console.log("connected to userId", userId, "peer id:", peer.id);
       shareVideo(userId);
     });
-  }, [])
+  }
+  }, [peer, camera])
 
   useEffect(() => {
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
@@ -177,6 +180,7 @@ export const VideoChat = ({
         .then((stream) => {
           if (previewRef.current) {
             previewRef.current.srcObject = stream; //.clone()
+            console.log("local stream from useEffect", stream)
           }
         })
         .catch((err) => {
@@ -190,6 +194,7 @@ export const VideoChat = ({
       peer.on("call", (call: any) => {
         console.log("peer call");
         if(!camera){
+          console.log("peer call with empty stream");
           const emptyStream = new MediaStream();
           call.answer(emptyStream);
         }else{
@@ -197,7 +202,10 @@ export const VideoChat = ({
         }
         call.on('stream', function(remoteStream: any) {
           if (videoRef.current) {
+            console.log("get remote stream test2", remoteStream)
             videoRef.current.srcObject = remoteStream;
+            const a = remoteStream.getTracks();
+            console.log("track", a)
           }
         });
       });
