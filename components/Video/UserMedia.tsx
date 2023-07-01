@@ -188,6 +188,11 @@ export const VideoChat = ({
             console.log("local stream from useEffect", stream);
             setLocalStream(stream.clone());
           }
+          const newStream = {
+            id: peer.id,
+            stream: stream,
+          };
+          setRemoteStreams((prevStreams: any) => [...prevStreams, newStream]);
 
           // if (currentCall) {
           //   currentCall.close();
@@ -233,7 +238,8 @@ export const VideoChat = ({
 
         call.on("close", function () {
           console.log("peer close");
-          call.close();
+          //setRemoteStreams((prevStreams: any) => prevStreams.filter((stream: any) => stream.id !== call.peer));
+          //call.close();
         });
       });
     }
@@ -255,7 +261,11 @@ export const VideoChat = ({
                 ) : (
                   <video
                     key={user}
-                    className="w-[180px] h-[136px] rounded-xl border-2 border-secondary-400"
+                    className={`w-[180px] h-[136px] rounded-xl border-2 ${
+                      user === peer.id
+                        ? "border-green-500"
+                        : "border-secondary-400"
+                    }`}
                     ref={(ref) =>
                       ref &&
                       (ref.srcObject = remoteStreams.find(
@@ -272,7 +282,7 @@ export const VideoChat = ({
           })}
         </ul>
       </section>
-      <section>
+      {/* <section>
         {remoteStreams.map((streamObj: any, index: number) => (
           <video
             key={index}
@@ -283,12 +293,12 @@ export const VideoChat = ({
             muted
           />
         ))}
-      </section>
+      </section> */}
       <video className="w-[40vw]" ref={screenRef} autoPlay playsInline />
-      <div className="preview-video w-[220px]">
+      {/* <div className="preview-video w-[220px]">
         <p className="text-primary-400">preview video</p>
         <video ref={previewRef} autoPlay muted playsInline />
-      </div>
+      </div> */}
     </div>
   );
 };
