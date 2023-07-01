@@ -20,8 +20,9 @@ export const VideoChat = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const screenRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
+  const [localStream, setLocalStream] = useState<any>(null);
+  const [remoteUserId, setRemoteUserId] = useState<string>('');
   const [localVideoStreamId, setLocalVideoStreamId] = useState('');
-  const [remoteUserId, setRemoteUserId] = useState('');
 
   // const connectToNewUser = (userId: string, stream: any) => {
   //   //call user并且把本机stream发过去。
@@ -170,7 +171,7 @@ export const VideoChat = ({
   }
   }, [peer, camera])
 
-  useEffect(() => {
+  useEffect(() => { //开摄像头时，打开本地preview。2.关闭目前的空单向stream。3.重新建立peer.call，把本地stream发送给room内所有人。
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
       const config = { video: camera, audio: muted };
 
@@ -180,7 +181,10 @@ export const VideoChat = ({
           if (previewRef.current) {
             previewRef.current.srcObject = stream; //.clone()
             console.log("local stream from useEffect", stream)
+            setLocalStream(stream.clone())
           }
+          console.log("remoteUserId", remoteUserId)
+          shareVideo(remoteUserId);
         })
         .catch((err) => {
           console.error("Error accessing media devices.", err);
@@ -191,13 +195,14 @@ export const VideoChat = ({
   useEffect(()=>{
     if(peer){
       peer.on("call", (call: any) => {
-        console.log("peer call");
+        setRemoteUserId(call.peer)
         if(!camera){
           console.log("peer call with empty stream");
           const emptyStream = new MediaStream();
           call.answer(emptyStream);
         }else{
-          
+          console.log("peer call with local stream");
+          call.answer(localStream);
         }
         call.on('stream', function(remoteStream: any) {
           if (videoRef.current) {
