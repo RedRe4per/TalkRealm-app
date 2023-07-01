@@ -21,8 +21,9 @@ export const VideoChat = ({
   const screenRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
   const [localStream, setLocalStream] = useState<any>(null);
-  const [remoteUserId, setRemoteUserId] = useState<string>('');
-  const [localVideoStreamId, setLocalVideoStreamId] = useState('');
+  const [remoteUserId, setRemoteUserId] = useState<string>("");
+  const [currentCall, setCurrentCall] = useState<any>(null);
+  const [localVideoStreamId, setLocalVideoStreamId] = useState("");
 
   // const connectToNewUser = (userId: string, stream: any) => {
   //   //call user并且把本机stream发过去。
@@ -37,7 +38,6 @@ export const VideoChat = ({
   //     videoRef.current?.remove();
   //   });
   // };
-  
 
   // // useEffect(()=>{
   // //   if(peer){
@@ -55,7 +55,7 @@ export const VideoChat = ({
   // // }, [peer])
 
   // useEffect(()=>{
-    
+
   // })
 
   // useEffect(() => {
@@ -137,41 +137,42 @@ export const VideoChat = ({
   //     videoRef.current?.remove();
   //   });
   // };
-  
 
   const shareVideo = (userId: string) => {
     //if(userId !== peer.id){
-       if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
+    if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
       const config = { video: true, audio: muted }; //此处找到之前的bug。如果把video的value设置为状态变量，会导致状态变化时此处不变化。
 
-      console.log("shared video to user", userId, "camera1:", camera)
+      console.log("shared video to user", userId, "camera1:", camera);
       navigator.mediaDevices
         .getUserMedia(config)
         .then((stream) => {
-          console.log("local stream from connected to new user", stream)
+          console.log("local stream from connected to new user", stream);
           const call = peer.call(userId, stream);
           //peers[userId] = call;
-              call.on("close", () => {
-                videoRef.current?.remove();
-              });
+          call.on("close", () => {
+            videoRef.current?.remove();
+          });
         })
         .catch((err) => {
           console.error("Error accessing media devices.", err);
         });
     }
-  }
+  };
   //}
 
-  useEffect(()=>{ //新用户登入room时连接。无论任何状态，都发送stream。
-    if(peer && camera){
+  useEffect(() => {
+    //新用户登入room时连接。无论任何状态，都发送stream。
+    if (peer && camera) {
       socket.on("user-connected", (userId: string) => {
-      console.log("connected to userId", userId, "peer id:", peer.id);
-      shareVideo(userId);
-    });
-  }
-  }, [peer, camera])
+        console.log("connected to userId", userId, "peer id:", peer.id);
+        shareVideo(userId);
+      });
+    }
+  }, [peer, camera]);
 
-  useEffect(() => { //开摄像头时，打开本地preview。2.关闭目前的空单向stream。3.重新建立peer.call，把本地stream发送给room内所有人。
+  useEffect(() => {
+    //开摄像头时，打开本地preview。2.关闭目前的空单向stream。3.重新建立peer.call，把本地stream发送给room内所有人。
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
       const config = { video: camera, audio: muted };
 
@@ -179,11 +180,17 @@ export const VideoChat = ({
         .getUserMedia(config)
         .then((stream) => {
           if (previewRef.current) {
-            previewRef.current.srcObject = stream; //.clone()
-            console.log("local stream from useEffect", stream)
-            setLocalStream(stream.clone())
+            previewRef.current.srcObject = stream;
+            console.log("local stream from useEffect", stream);
+            setLocalStream(stream.clone());
           }
-          console.log("remoteUserId", remoteUserId)
+
+          // if (currentCall) {
+          //   currentCall.close();
+          //   setCurrentCall(null);
+          // }
+
+          console.log("remoteUserId", remoteUserId);
           shareVideo(remoteUserId);
         })
         .catch((err) => {
@@ -192,33 +199,40 @@ export const VideoChat = ({
     }
   }, [muted, camera]);
 
-  useEffect(()=>{
-    if(peer){
+  useEffect(() => {
+    if (peer) {
       peer.on("call", (call: any) => {
-        setRemoteUserId(call.peer)
-        if(!camera){
+        setRemoteUserId(call.peer);
+        setCurrentCall(call);
+
+        if (!camera) {
           console.log("peer call with empty stream");
           const emptyStream = new MediaStream();
           call.answer(emptyStream);
-        }else{
+        } else {
           console.log("peer call with local stream");
           call.answer(localStream);
         }
-        call.on('stream', function(remoteStream: any) {
+        call.on("stream", function (remoteStream: any) {
           if (videoRef.current) {
-            console.log("get remote stream test2", remoteStream)
+            console.log("get remote stream test2", remoteStream);
             videoRef.current.srcObject = remoteStream;
             const a = remoteStream.getTracks();
-            console.log("track", a)
+            console.log("track", a);
           }
+        });
+
+        call.on('close', function() {
+          console.log("peer close")
+          call.close();
         });
       });
     }
-  }, [peer, camera])
+  }, [peer, camera]);
 
   return (
     <div className="video-chat">
-      <video className="w-[40vw]" ref={videoRef} autoPlay playsInline muted/>
+      <video className="w-[40vw]" ref={videoRef} autoPlay playsInline muted />
       <video className="w-[40vw]" ref={screenRef} autoPlay playsInline />
       <div className="preview-video w-[220px]">
         <p className="text-primary-400">preview video</p>

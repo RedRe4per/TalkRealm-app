@@ -39,9 +39,9 @@ export default function Room(roomInfo: Props) {
       };
     });
 
-    return(()=>{
+    return () => {
       socketIo.emit("I-disconnect", peer.id);
-    })
+    };
   }, []);
 
   // useEffect(() => {
@@ -56,7 +56,7 @@ export default function Room(roomInfo: Props) {
   //   return () => {
   //     window.removeEventListener('beforeunload', handleBeforeUnload);
   //   };
-  // }, [socketIo, peer]);  
+  // }, [socketIo, peer]);
 
   const handleMessage = () => {
     if (socketIo) {

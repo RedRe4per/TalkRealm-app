@@ -45,7 +45,7 @@ export default function FunctionBar({
             className={`${
               camera ? "bg-quaternary" : "bg-primary-400 hover:bg-primary"
             } room-function-bar-button`}
-            onClick={()=>setCamera(!camera)}
+            onClick={() => setCamera(!camera)}
           >
             <VideoCameraIcon
               className="h-5 w-5 text-secondary"
