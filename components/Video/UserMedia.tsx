@@ -149,7 +149,7 @@ export const VideoChat = ({
         .then((stream) => {
           console.log("local stream from connected to new user", stream)
           const call = peer.call(userId, stream);
-          peers[userId] = call;
+          //peers[userId] = call;
               call.on("close", () => {
                 videoRef.current?.remove();
               });
@@ -162,8 +162,7 @@ export const VideoChat = ({
   //}
 
   useEffect(()=>{ //新用户登入room时连接。无论任何状态，都发送stream。
-    if(peer && camera){ //此处加上 &&camera 后就无法再显示remote stream。可能原因是远程stream中选用的是本地stream？如果
-      //是这样，那么此代码逻辑彻底错误；但是通过招手测试，两个stream是不同的。 
+    if(peer && camera){
       socket.on("user-connected", (userId: string) => {
       console.log("connected to userId", userId, "peer id:", peer.id);
       shareVideo(userId);
@@ -214,7 +213,7 @@ export const VideoChat = ({
 
   return (
     <div className="video-chat">
-      <video className="w-[40vw]" ref={videoRef} autoPlay playsInline />
+      <video className="w-[40vw]" ref={videoRef} autoPlay playsInline muted/>
       <video className="w-[40vw]" ref={screenRef} autoPlay playsInline />
       <div className="preview-video w-[220px]">
         <p className="text-primary-400">preview video</p>
