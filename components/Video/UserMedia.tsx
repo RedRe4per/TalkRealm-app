@@ -70,7 +70,7 @@ export const VideoChat = ({
         .then((stream) => {
           const call = peer.call(userPeerId, stream);
           setOutgoingCalls((prevCalls) => [...prevCalls, call]);
-          setSharedStreams(prev => [...prev, stream]);
+          setSharedStreams((prev) => [...prev, stream]);
 
           call.on("close", () => {
             setOutgoingCalls((prevCalls) =>
@@ -91,7 +91,7 @@ export const VideoChat = ({
         shareVideo(userObj.userPeerId);
       };
       socket.on("user-connected", handler);
-  
+
       return () => {
         socket.off("user-connected", handler);
       };
@@ -102,6 +102,12 @@ export const VideoChat = ({
     const handleRemoteCameraClose = (outgoingIds: any[]) => {
       const newCalls = currentCalls.filter((call: any) => {
         if (outgoingIds.includes(call.connectionId)) {
+          setRemoteStreams((prevStreams: any) =>
+            prevStreams.filter((stream: any) => stream.userPeerId !== call.peer)
+          );
+          setRemoteUserPeerId((prev: any) =>
+            prev.filter((item: any) => call.peer !== item)
+          );
           call.close();
           return false;
         } else {
@@ -117,7 +123,6 @@ export const VideoChat = ({
   }, [socket, currentCalls]);
 
   useEffect(() => {
-    console.log(prevCamera, "prevCamera", camera, "camera", localStream)
     //开摄像头时，打开本地preview。2.关闭目前的空单向stream。3.重新建立peer.call
     if (
       "mediaDevices" in navigator &&
@@ -135,7 +140,6 @@ export const VideoChat = ({
           setLocalStream(stream);
           setRemoteStreams((prevStreams: any) => [...prevStreams, myStream]);
 
-          console.log("remoteUserId", remoteUserPeerId);
           userList
             .filter((userObj: any) => userObj.userPeerId !== peer.id)
             .forEach((userObj: any) => {
@@ -146,27 +150,23 @@ export const VideoChat = ({
           console.error("Error accessing media devices.", err);
         });
     } else {
-      
-        const outgoingIds: string[] = outgoingCalls.map((outgoingCall: any) => {
-          return outgoingCall.connectionId;
+      const outgoingIds: string[] = outgoingCalls.map((outgoingCall: any) => {
+        return outgoingCall.connectionId;
+      });
+      socket.emit("camera-close", outgoingIds);
+      outgoingCalls.forEach((call) => {
+        call.close();
+      });
+      setOutgoingCalls([]);
+      setRemoteStreams((prev: any) =>
+        prev.filter((item: any) => item.userPeerId !== peer.id)
+      );
+      if (localStream) {
+        localStream.getTracks().forEach((track: any) => track.stop());
+        sharedStreams.forEach((stream: any) => {
+          stream.getTracks().forEach((track: any) => track.stop());
         });
-        console.log("outgoingCalls", outgoingCalls);
-        socket.emit("camera-close", outgoingIds);
-        outgoingCalls.forEach((call) => {
-          call.close();
-        });
-        setOutgoingCalls([]);
-        setRemoteStreams((prev: any) =>
-          prev.filter((item: any) => item.userPeerId !== peer.id)
-        );
-        if (localStream) {
-          localStream.getTracks().forEach((track: any) => track.stop());
-          sharedStreams.forEach((stream: any)=>{
-            stream.getTracks().forEach((track: any) => track.stop());
-          })
-          //setLocalStream(null);
-        }
-      
+      }
     }
   }, [camera]);
 
@@ -174,7 +174,6 @@ export const VideoChat = ({
     //接收远程peer时处理
     if (peer) {
       peer.on("call", (call: any) => {
-        //   currentCalls.findIndex((item: any) => item.connectionId === call.connectionId) < 0
         setCurrentCalls((prevCalls) => [...prevCalls, call]);
         setRemoteUserPeerId((prev: any) => {
           if (!prev.includes(call.peer)) {
@@ -199,8 +198,6 @@ export const VideoChat = ({
         });
 
         call.on("close", function () {
-          //测试，无法监测到发送方直接关闭摄像头或者直接关闭页面
-          console.log("close 11111111111111111111");
           setRemoteStreams((prevStreams: any) =>
             prevStreams.filter((stream: any) => stream.userPeerId !== call.peer)
           );
@@ -219,7 +216,7 @@ export const VideoChat = ({
   }, [peer, camera]);
 
   const handleBug = () => {
-    console.log("outgoingCalls debug", outgoingCalls, localStream, localStream.getTracks());
+    console.log();
   };
 
   return (
