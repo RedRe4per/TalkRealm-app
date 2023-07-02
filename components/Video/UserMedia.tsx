@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Socket } from "socket.io-client";
-import Peer, { MediaConnection } from "peerjs";
+import type { Peer, MediaConnection } from "peerjs";
 import { UserObj, IUserProps } from "@/interfaces/socket";
 
 interface Props {

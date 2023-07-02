@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import useBeforeUnload from "@/hooks/useBeforeUnload";
 import { UserObj, IUserProps, IUserIdProps } from "@/interfaces/socket";
-import Peer from "peerjs";
+import type { Peer } from "peerjs";
 
 interface Props {
   roomInfo: any;
