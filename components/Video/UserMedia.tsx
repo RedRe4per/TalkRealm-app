@@ -148,6 +148,7 @@ export const VideoChat = ({
     //接收远程peer时处理
     if (peer) {
       peer.on("call", (call: any) => {
+        console.log("calllllllllllllllllllllllllllllllllllllllllllllllllllll")
         setCurrentCall(call);
         setRemoteUserPeerId((prev: any) => {
           if (!prev.includes(call.peer)) {
@@ -157,7 +158,7 @@ export const VideoChat = ({
           }
         });
 
-        console.log("test123,", peer.id);
+        console.log("test123,", peer.id, call.peer, "camera", camera);
 
         if (!camera) {
           console.log("peer call with empty stream");
@@ -189,6 +190,10 @@ export const VideoChat = ({
   useEffect(() => {
     console.log("camera test,", camera);
   }, [camera]);
+
+  useEffect(() => {
+    console.log("peer test,", peer);
+  }, [peer]);
 
   const handleBug = () => {
     if (localStream) {
