@@ -148,10 +148,16 @@ export const VideoChat = ({
     //接收远程peer时处理
     if (peer) {
       peer.on("call", (call: any) => {
-        setRemoteUserPeerId((prev: any) => [...prev, call.peer]);
         setCurrentCall(call);
+        setRemoteUserPeerId((prev: any) => {
+          if (!prev.includes(call.peer)) {
+            return [...prev, call.peer];
+          } else {
+            return prev;
+          }
+        });
 
-        console.log("test123,", camera);
+        console.log("test123,", peer.id);
 
         if (!camera) {
           console.log("peer call with empty stream");
@@ -170,9 +176,11 @@ export const VideoChat = ({
         });
 
         call.on("close", function () {
+          console.log("close 11111111111111111111")
           setRemoteStreams((prevStreams: any) =>
             prevStreams.filter((stream: any) => stream.userPeerId !== call.peer)
           );
+          setRemoteUserPeerId((prev: any)=>prev.filter((item: any)=>call.peer !== item))
         });
       });
     }
