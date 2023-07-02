@@ -85,9 +85,14 @@ export const VideoChat = ({
 
   useEffect(() => {
     if (peer && camera) {
-      socket.on("user-connected", ({ userObj: userObj }: any) => {
+      const handler = ({ userObj: userObj }: any) => {
         shareVideo(userObj.userPeerId);
-      });
+      };
+      socket.on("user-connected", handler);
+  
+      return () => {
+        socket.off("user-connected", handler);
+      };
     }
   }, [peer, camera]);
 
