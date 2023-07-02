@@ -21,45 +21,10 @@ export const VideoChat = ({
 }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const screenRef = useRef<HTMLVideoElement>(null);
-  const previewRef = useRef<HTMLVideoElement>(null);
   const [localStream, setLocalStream] = useState<any>(null);
   const [remoteStreams, setRemoteStreams] = useState<any>([]);
   const [remoteUserPeerId, setRemoteUserPeerId] = useState<string[]>([]);
   const [currentCall, setCurrentCall] = useState<any>(null);
-  const [localVideoStreamId, setLocalVideoStreamId] = useState("");
-
-
-  // useEffect(() => {
-  //   if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
-  //     const config = { video: camera, audio: muted };
-
-  //     navigator.mediaDevices
-  //       .getUserMedia(config)
-  //       .then((stream) => {
-  //         if (previewRef.current) {
-  //           previewRef.current.srcObject = stream; //.clone()
-  //         }
-  //         socket.on("user-connected", (userId: string) => {
-  //           //当新用户连接时
-  //           console.log("connected to userId", userId);
-  //           connectToNewUser(userId, stream);
-  //         });
-
-  //         peer.on("call", (call: any) => {
-  //           console.log("peer call");
-  //           call.answer(stream);
-  //           call.on('stream', function(remoteStream: any) {
-  //             if (videoRef.current) {
-  //               videoRef.current.srcObject = remoteStream;
-  //             }
-  //           });
-  //         });
-  //       })
-  //       .catch((err) => {
-  //         console.error("Error accessing media devices.", err);
-  //       });
-  //   }
-  // }, [muted, camera]);
 
   // useEffect(() => {
   //   const startScreenShare = async () => {
@@ -120,7 +85,7 @@ export const VideoChat = ({
   //}
 
   useEffect(() => {
-    //新用户登入room时连接。无论任何状态，都发送stream。
+    //新用户登入room时连接。如果自己开着camera，发送stream。
     if (peer && camera) {
       socket.on("user-connected", ({ userObj: userObj, users: users }: any) => {
         shareVideo(userObj.userPeerId);
@@ -137,25 +102,18 @@ export const VideoChat = ({
       navigator.mediaDevices
         .getUserMedia(config)
         .then((stream) => {
-          if (previewRef.current) {
-            previewRef.current.srcObject = stream;
-            console.log("local stream from useEffect", stream);
-            setLocalStream(stream.clone());
-          }
-          const newStream = {
+          const myStream = {
             userPeerId: peer.id,
             stream: stream,
           };
-          setRemoteStreams((prevStreams: any) => [...prevStreams, newStream]);
+          setLocalStream(stream.clone());
+          setRemoteStreams((prevStreams: any) => [...prevStreams, myStream]);
 
-          // if (currentCall) {
-          //   currentCall.close();
-          //   setCurrentCall(null);
-          // }
+          // 这里也许可以加入逻辑，移除当前所有peer.call，然后重新连接？
 
           console.log("remoteUserId", remoteUserPeerId);
-          remoteUserPeerId.forEach((item)=>{
-            shareVideo(item);
+          userList.forEach((userObj: any)=>{
+            shareVideo(userObj.userPeerId);
           })
         })
         .catch((err) => {
@@ -164,7 +122,7 @@ export const VideoChat = ({
     }
   }, [camera]);
 
-  useEffect(() => {
+  useEffect(() => { //接收远程peer时处理
     if (peer) {
       peer.on("call", (call: any) => {
         setRemoteUserPeerId((prev: any) => [...prev, call.peer]);
@@ -184,12 +142,6 @@ export const VideoChat = ({
             stream: remoteStream,
           };
           setRemoteStreams((prevStreams: any) => [...prevStreams, newStream]);
-          // if (videoRef.current) {
-          //   console.log("get remote stream test2", remoteStream);
-          //   videoRef.current.srcObject = remoteStream;
-          //   const a = remoteStream.getTracks();
-          //   console.log("track", a);
-          // }
         });
 
         call.on("close", function () {
@@ -251,10 +203,6 @@ export const VideoChat = ({
         ))}
       </section> */}
       <video className="w-[40vw]" ref={screenRef} autoPlay playsInline />
-      {/* <div className="preview-video w-[220px]">
-        <p className="text-primary-400">preview video</p>
-        <video ref={previewRef} autoPlay muted playsInline />
-      </div> */}
     </div>
   );
 };

@@ -10,7 +10,7 @@ interface Props {
   roomInfo: any;
 }
 
-type UserList = {
+type UserObj = {
   userId: string;
   userPeerId: string;
   userName: string;
@@ -27,7 +27,7 @@ export default function Room(roomInfo: Props) {
   const [camera, setCamera] = useState(false);
   const [shareScreen, setShareScreen] = useState(false);
   const [peer, setPeer] = useState<any>(null);
-  const [userList, setUserList] = useState<UserList[]>([]);
+  const [userList, setUserList] = useState<UserObj[]>([]);
   let socketIo: Socket = io(`${process.env.NEXT_PUBLIC_SERVER_ADDRESS}`);
   let myPeerId: string = "";
   const peers = {};
