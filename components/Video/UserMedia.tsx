@@ -24,42 +24,10 @@ export const VideoChat = ({
   const previewRef = useRef<HTMLVideoElement>(null);
   const [localStream, setLocalStream] = useState<any>(null);
   const [remoteStreams, setRemoteStreams] = useState<any>([]);
-  const [remoteUserPeerId, setRemoteUserPeerId] = useState<string>("");
+  const [remoteUserPeerId, setRemoteUserPeerId] = useState<string[]>([]);
   const [currentCall, setCurrentCall] = useState<any>(null);
   const [localVideoStreamId, setLocalVideoStreamId] = useState("");
 
-  // const connectToNewUser = (userId: string, stream: any) => {
-  //   //call user并且把本机stream发过去。
-  //   console.log("connectToNewUser");
-  //   const call = peer.call(userId, stream);
-  //   call.on("stream", (userVideoStream: any) => {
-  //     // if (videoRef.current) {
-  //     //   videoRef.current.srcObject = userVideoStream;
-  //     // }
-  //   });
-  //   call.on("close", () => {
-  //     videoRef.current?.remove();
-  //   });
-  // };
-
-  // // useEffect(()=>{
-  // //   if(peer){
-  // //     peer.on("call", (call: any) => {
-  // //       console.log("peer call")
-  // //       //call.answer(stream);1
-  // //       call.on('stream', function(remoteStream: any) {
-  // //         if (videoRef.current) {
-  // //           videoRef.current.srcObject = remoteStream;
-  // //         }
-  // //       });
-  // //     });
-
-  // //   }
-  // // }, [peer])
-
-  // useEffect(()=>{
-
-  // })
 
   // useEffect(() => {
   //   if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
@@ -127,19 +95,6 @@ export const VideoChat = ({
   //   }
   // }, [shareScreen]);
 
-  //   const connectToNewUser = (userId: string, stream: any) => {
-  //   //call user并且把本机stream发过去。
-  //   console.log("connectToNewUser");
-  //   const call = peer.call(userId, stream);
-  //   call.on("stream", (userVideoStream: any) => {
-  //     // if (videoRef.current) {
-  //     //   videoRef.current.srcObject = userVideoStream;
-  //     // }
-  //   });
-  //   call.on("close", () => {
-  //     videoRef.current?.remove();
-  //   });
-  // };
 
   const shareVideo = (userPeerId: string) => {
     //if(userId !== peer.id){
@@ -179,7 +134,6 @@ export const VideoChat = ({
     //因此，需要率先获得全房间所有userId，然后遍历shareVideo。
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
       const config = { video: camera, audio: muted };
-
       navigator.mediaDevices
         .getUserMedia(config)
         .then((stream) => {
@@ -200,18 +154,20 @@ export const VideoChat = ({
           // }
 
           console.log("remoteUserId", remoteUserPeerId);
-          shareVideo(remoteUserPeerId);
+          remoteUserPeerId.forEach((item)=>{
+            shareVideo(item);
+          })
         })
         .catch((err) => {
           console.error("Error accessing media devices.", err);
         });
     }
-  }, [muted, camera]);
+  }, [camera]);
 
   useEffect(() => {
     if (peer) {
       peer.on("call", (call: any) => {
-        setRemoteUserPeerId(call.peer);
+        setRemoteUserPeerId((prev: any) => [...prev, call.peer]);
         setCurrentCall(call);
 
         if (!camera) {
