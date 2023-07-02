@@ -25,6 +25,7 @@ export const VideoChat = ({
   const [remoteStreams, setRemoteStreams] = useState<any>([]);
   const [remoteUserPeerId, setRemoteUserPeerId] = useState<string[]>([]);
   const [currentCall, setCurrentCall] = useState<any>(null);
+  const [outgoingCalls, setOutgoingCalls] = useState<any[]>([]);
 
   // useEffect(() => {
   //   const startScreenShare = async () => {
@@ -72,7 +73,8 @@ export const VideoChat = ({
         .then((stream) => {
           console.log("local stream from connected to new user", stream);
           const call = peer.call(userPeerId, stream);
-          //peers[userId] = call;
+          setOutgoingCalls((prevCalls) => [...prevCalls, call]);
+
           call.on("close", () => {
             videoRef.current?.remove();
           });
@@ -97,7 +99,7 @@ export const VideoChat = ({
     //开摄像头时，打开本地preview。2.关闭目前的空单向stream。3.重新建立peer.call，把本地stream发送给room内所有人。
     //此处需要满足需求：假设客户端A打开页面时没有share video，客户端B打开时也没有share video。此时客户端A打开share video，客户端B需要能接收到。
     //因此，需要率先获得全房间所有userId，然后遍历shareVideo。
-    if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
+    if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia && camera) {
       const config = { video: camera, audio: muted };
       navigator.mediaDevices
         .getUserMedia(config)
@@ -119,6 +121,12 @@ export const VideoChat = ({
         .catch((err) => {
           console.error("Error accessing media devices.", err);
         });
+    }else{
+      outgoingCalls.forEach((call) => {
+        call.close();
+      });
+      setOutgoingCalls([]);
+      setRemoteStreams((prev: any) => prev.filter((item: any) => item.userPeerId !== peer.id));
     }
   }, [camera]);
 
@@ -145,9 +153,7 @@ export const VideoChat = ({
         });
 
         call.on("close", function () {
-          console.log("peer close");
-          //setRemoteStreams((prevStreams: any) => prevStreams.filter((stream: any) => stream.id !== call.peer));
-          //call.close();
+          setRemoteStreams((prevStreams: any) => prevStreams.filter((stream: any) => stream.userPeerId !== call.peer));
         });
       });
     }
