@@ -26,6 +26,7 @@ export const VideoChat = ({
   const [outgoingCalls, setOutgoingCalls] = useState<any[]>([]);
   const prevCamera = usePrevious(camera);
   const [currentCalls, setCurrentCalls] = useState<any[]>([]);
+  const [sharedStreams, setSharedStreams] = useState<any[]>([]);
 
   // useEffect(() => {
   //   const startScreenShare = async () => {
@@ -69,6 +70,7 @@ export const VideoChat = ({
         .then((stream) => {
           const call = peer.call(userPeerId, stream);
           setOutgoingCalls((prevCalls) => [...prevCalls, call]);
+          setSharedStreams(prev => [...prev, stream]);
 
           call.on("close", () => {
             setOutgoingCalls((prevCalls) =>
@@ -115,6 +117,7 @@ export const VideoChat = ({
   }, [socket, currentCalls]);
 
   useEffect(() => {
+    console.log(prevCamera, "prevCamera", camera, "camera", localStream)
     //开摄像头时，打开本地preview。2.关闭目前的空单向stream。3.重新建立peer.call
     if (
       "mediaDevices" in navigator &&
@@ -143,7 +146,7 @@ export const VideoChat = ({
           console.error("Error accessing media devices.", err);
         });
     } else {
-      if (prevCamera === true && camera === false) {
+      
         const outgoingIds: string[] = outgoingCalls.map((outgoingCall: any) => {
           return outgoingCall.connectionId;
         });
@@ -158,11 +161,14 @@ export const VideoChat = ({
         );
         if (localStream) {
           localStream.getTracks().forEach((track: any) => track.stop());
+          sharedStreams.forEach((stream: any)=>{
+            stream.getTracks().forEach((track: any) => track.stop());
+          })
           //setLocalStream(null);
         }
-      }
+      
     }
-  }, [camera, prevCamera]);
+  }, [camera]);
 
   useEffect(() => {
     //接收远程peer时处理
@@ -213,15 +219,7 @@ export const VideoChat = ({
   }, [peer, camera]);
 
   const handleBug = () => {
-    // if (localStream) {
-    //   const tracks = localStream.getTracks();
-    //   console.log(tracks);
-    //   tracks.forEach((track: any) =>
-    //     console.log(track.kind, track.enabled, track.readyState)
-    //   );
-    // }
-    console.log("outgoingCalls debug", outgoingCalls);
-    //currentCall.close()
+    console.log("outgoingCalls debug", outgoingCalls, localStream, localStream.getTracks());
   };
 
   return (
