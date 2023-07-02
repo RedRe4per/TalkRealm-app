@@ -61,7 +61,6 @@ export const VideoChat = ({
   //   }
   // }, [shareScreen]);
 
-
   const shareVideo = (userPeerId: string) => {
     //if(userId !== peer.id){
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
@@ -76,6 +75,9 @@ export const VideoChat = ({
           setOutgoingCalls((prevCalls) => [...prevCalls, call]);
 
           call.on("close", () => {
+            setOutgoingCalls((prevCalls) =>
+              prevCalls.filter((item) => item !== call)
+            );
             videoRef.current?.remove();
           });
         })
@@ -99,7 +101,11 @@ export const VideoChat = ({
     //开摄像头时，打开本地preview。2.关闭目前的空单向stream。3.重新建立peer.call，把本地stream发送给room内所有人。
     //此处需要满足需求：假设客户端A打开页面时没有share video，客户端B打开时也没有share video。此时客户端A打开share video，客户端B需要能接收到。
     //因此，需要率先获得全房间所有userId，然后遍历shareVideo。
-    if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia && camera) {
+    if (
+      "mediaDevices" in navigator &&
+      navigator.mediaDevices.getUserMedia &&
+      camera
+    ) {
       const config = { video: camera, audio: muted };
       navigator.mediaDevices
         .getUserMedia(config)
@@ -108,33 +114,44 @@ export const VideoChat = ({
             userPeerId: peer.id,
             stream: stream,
           };
-          setLocalStream(stream.clone());
+          setLocalStream(stream); //.clone()
           setRemoteStreams((prevStreams: any) => [...prevStreams, myStream]);
 
           // 这里也许可以加入逻辑，移除当前所有peer.call，然后重新连接？
 
           console.log("remoteUserId", remoteUserPeerId);
-          userList.forEach((userObj: any)=>{
-            shareVideo(userObj.userPeerId);
-          })
+          userList
+            .filter((userObj: any) => userObj.userPeerId !== peer.id)
+            .forEach((userObj: any) => {
+              shareVideo(userObj.userPeerId);
+            });
         })
         .catch((err) => {
           console.error("Error accessing media devices.", err);
         });
-    }else{
+    } else {
       outgoingCalls.forEach((call) => {
         call.close();
       });
       setOutgoingCalls([]);
-      setRemoteStreams((prev: any) => prev.filter((item: any) => item.userPeerId !== peer.id));
+      setRemoteStreams((prev: any) =>
+        prev.filter((item: any) => item.userPeerId !== peer.id)
+      );
+      if (localStream) {
+        localStream.getTracks().forEach((track: any) => track.stop());
+        //setLocalStream(null);
+      }
     }
   }, [camera]);
 
-  useEffect(() => { //接收远程peer时处理
+  useEffect(() => {
+    //接收远程peer时处理
     if (peer) {
       peer.on("call", (call: any) => {
         setRemoteUserPeerId((prev: any) => [...prev, call.peer]);
         setCurrentCall(call);
+
+        console.log("test123,", camera);
 
         if (!camera) {
           console.log("peer call with empty stream");
@@ -153,21 +170,41 @@ export const VideoChat = ({
         });
 
         call.on("close", function () {
-          setRemoteStreams((prevStreams: any) => prevStreams.filter((stream: any) => stream.userPeerId !== call.peer));
+          setRemoteStreams((prevStreams: any) =>
+            prevStreams.filter((stream: any) => stream.userPeerId !== call.peer)
+          );
         });
       });
     }
   }, [peer, camera]);
 
+  useEffect(() => {
+    console.log("camera test,", camera);
+  }, [camera]);
+
+  const handleBug = () => {
+    if (localStream) {
+      const tracks = localStream.getTracks();
+      console.log(tracks);
+      tracks.forEach((track: any) =>
+        console.log(track.kind, track.enabled, track.readyState)
+      );
+    }
+  };
+
   return (
     <div>
+      <button className="text-quaternary-400" onClick={handleBug}>
+        find bug
+      </button>
       <section>
         <ul className="flex gap-3 p-4 bg-primary-100">
           {userList.map((userObj: any) => {
             return (
               <div key={userObj.userPeerId}>
                 {remoteStreams.findIndex(
-                  (remoteStream: any) => remoteStream.userPeerId === userObj.userPeerId
+                  (remoteStream: any) =>
+                    remoteStream.userPeerId === userObj.userPeerId
                 ) < 0 ? (
                   <li className="w-[180px] h-[136px] px-3 py-2 bg-primary-400 text-secondary rounded-xl border-2 border-secondary-400">
                     {userObj.userName}
