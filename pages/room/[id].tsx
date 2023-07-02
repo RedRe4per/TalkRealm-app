@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import useBeforeUnload from "@/hooks/useBeforeUnload";
 import { UserObj, IUserProps, IUserIdProps } from "@/interfaces/socket";
+import Peer from "peerjs";
 
 interface Props {
   roomInfo: any;
@@ -26,7 +27,7 @@ export default function Room(roomInfo: Props) {
   const [muted, setMuted] = useState(false);
   const [camera, setCamera] = useState(false);
   const [shareScreen, setShareScreen] = useState(false);
-  const [peer, setPeer] = useState<any>(null);
+  const [peer, setPeer] = useState<Peer | null>(null);
   const [userList, setUserList] = useState<UserObj[]>([]);
   let socketIo: Socket = io(`${process.env.NEXT_PUBLIC_SERVER_ADDRESS}`);
   let myPeerId: string = "";

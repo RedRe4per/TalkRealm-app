@@ -1,6 +1,7 @@
 import ChannelBar from "./ChannelBar";
 import TitleBar from "./TitleBar";
 import FunctionBar from "./FunctionBar";
+import { UserObj } from "@/interfaces/socket";
 
 interface Props {
   muted: boolean;
@@ -9,7 +10,7 @@ interface Props {
   setCamera: (param: boolean) => void;
   shareScreen: boolean;
   setShareScreen: (param: boolean) => void;
-  userList: any;
+  userList: UserObj[];
 }
 
 export default function SideBar({

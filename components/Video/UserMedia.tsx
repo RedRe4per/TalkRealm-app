@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Socket } from "socket.io-client";
+import Peer, { MediaConnection } from "peerjs";
 import { UserObj, IUserProps } from "@/interfaces/socket";
 
 interface Props {
@@ -7,7 +8,7 @@ interface Props {
   camera: boolean;
   shareScreen: boolean;
   socket: Socket;
-  peer: any;
+  peer: Peer | null;
   userList: UserObj[];
 }
 
@@ -28,8 +29,8 @@ export const VideoChat = ({
   const screenRef = useRef<HTMLVideoElement>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStreams, setRemoteStreams] = useState<StreamObject[]>([]);
-  const [outgoingCalls, setOutgoingCalls] = useState<any[]>([]);
-  const [currentCalls, setCurrentCalls] = useState<any[]>([]);
+  const [outgoingCalls, setOutgoingCalls] = useState<MediaConnection[]>([]);
+  const [currentCalls, setCurrentCalls] = useState<MediaConnection[]>([]);
   const [sharedStreams, setSharedStreams] = useState<MediaStream[]>([]);
 
   // useEffect(() => {
@@ -72,7 +73,7 @@ export const VideoChat = ({
       navigator.mediaDevices
         .getUserMedia(config)
         .then((stream) => {
-          const call = peer.call(userPeerId, stream);
+          const call = peer!.call(userPeerId, stream);
           setOutgoingCalls((prevCalls) => [...prevCalls, call]);
           setSharedStreams((prev) => [...prev, stream]);
 
@@ -104,7 +105,7 @@ export const VideoChat = ({
 
   useEffect(() => {
     const handleRemoteCameraClose = (outgoingIds: string[]) => {
-      const newCalls = currentCalls.filter((call: any) => {
+      const newCalls = currentCalls.filter((call: MediaConnection) => {
         if (outgoingIds.includes(call.connectionId)) {
           setRemoteStreams((prevStreams: StreamObject[]) =>
             prevStreams.filter(
@@ -137,7 +138,7 @@ export const VideoChat = ({
         .getUserMedia(config)
         .then((stream) => {
           const myStream = {
-            userPeerId: peer.id,
+            userPeerId: peer!.id,
             stream: stream,
           };
           setLocalStream(stream);
@@ -147,7 +148,7 @@ export const VideoChat = ({
           ]);
 
           userList
-            .filter((userObj: UserObj) => userObj.userPeerId !== peer.id)
+            .filter((userObj: UserObj) => userObj.userPeerId !== peer!.id)
             .forEach((userObj: UserObj) => {
               shareVideo(userObj.userPeerId);
             });
@@ -156,16 +157,18 @@ export const VideoChat = ({
           console.error("Error accessing media devices.", err);
         });
     } else {
-      const outgoingIds: string[] = outgoingCalls.map((outgoingCall: any) => {
-        return outgoingCall.connectionId;
-      });
+      const outgoingIds: string[] = outgoingCalls.map(
+        (outgoingCall: MediaConnection) => {
+          return outgoingCall.connectionId;
+        }
+      );
       socket.emit("camera-close", outgoingIds);
       outgoingCalls.forEach((call) => {
         call.close();
       });
       setOutgoingCalls([]);
       setRemoteStreams((prev: StreamObject[]) =>
-        prev.filter((item: StreamObject) => item.userPeerId !== peer.id)
+        prev.filter((item: StreamObject) => item.userPeerId !== peer!.id)
       );
       if (localStream) {
         localStream
@@ -181,13 +184,13 @@ export const VideoChat = ({
   useEffect(() => {
     //接收远程peer时处理
     if (peer) {
-      peer.on("call", (call: any) => {
+      peer.on("call", (call: MediaConnection) => {
         setCurrentCalls((prevCalls) => [...prevCalls, call]);
         if (!camera) {
           const emptyStream = new MediaStream();
           call.answer(emptyStream);
         } else {
-          call.answer(localStream);
+          call.answer(localStream || undefined);
         }
         call.on("stream", function (remoteStream: MediaStream) {
           const newStream = {
@@ -242,7 +245,7 @@ export const VideoChat = ({
                   <video
                     key={userObj.userPeerId}
                     className={`w-[180px] h-[136px] rounded-xl border-2 ${
-                      userObj.userPeerId === peer.id
+                      userObj.userPeerId === peer!.id
                         ? "border-quaternary"
                         : "border-secondary-400"
                     }`}
