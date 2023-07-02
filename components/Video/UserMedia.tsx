@@ -62,15 +62,11 @@ export const VideoChat = ({
   // }, [shareScreen]);
 
   const shareVideo = (userPeerId: string) => {
-    //if(userId !== peer.id){
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
-      const config = { video: true, audio: muted }; //此处找到之前的bug。如果把video的value设置为状态变量，会导致状态变化时此处不变化。
-
-      console.log("shared video to user", userPeerId, "camera1:", camera);
+      const config = { video: true, audio: false };
       navigator.mediaDevices
         .getUserMedia(config)
         .then((stream) => {
-          console.log("local stream from connected to new user", stream);
           const call = peer.call(userPeerId, stream);
           setOutgoingCalls((prevCalls) => [...prevCalls, call]);
 
@@ -86,12 +82,10 @@ export const VideoChat = ({
         });
     }
   };
-  //}
 
   useEffect(() => {
-    //新用户登入room时连接。如果自己开着camera，发送stream。
     if (peer && camera) {
-      socket.on("user-connected", ({ userObj: userObj, users: users }: any) => {
+      socket.on("user-connected", ({ userObj: userObj }: any) => {
         shareVideo(userObj.userPeerId);
       });
     }
@@ -148,7 +142,6 @@ export const VideoChat = ({
     //接收远程peer时处理
     if (peer) {
       peer.on("call", (call: any) => {
-        console.log("calllllllllllllllllllllllllllllllllllllllllllllllllllll")
         setCurrentCall(call);
         setRemoteUserPeerId((prev: any) => {
           if (!prev.includes(call.peer)) {
@@ -158,14 +151,10 @@ export const VideoChat = ({
           }
         });
 
-        console.log("test123,", peer.id, call.peer, "camera", camera);
-
         if (!camera) {
-          console.log("peer call with empty stream");
           const emptyStream = new MediaStream();
           call.answer(emptyStream);
         } else {
-          console.log("peer call with local stream");
           call.answer(localStream);
         }
         call.on("stream", function (remoteStream: any) {
@@ -177,23 +166,23 @@ export const VideoChat = ({
         });
 
         call.on("close", function () {
-          console.log("close 11111111111111111111")
+          console.log("close 11111111111111111111");
           setRemoteStreams((prevStreams: any) =>
             prevStreams.filter((stream: any) => stream.userPeerId !== call.peer)
           );
-          setRemoteUserPeerId((prev: any)=>prev.filter((item: any)=>call.peer !== item))
+          setRemoteUserPeerId((prev: any) =>
+            prev.filter((item: any) => call.peer !== item)
+          );
         });
       });
     }
+
+    return () => {
+      if (peer) {
+        peer.off("call");
+      }
+    };
   }, [peer, camera]);
-
-  useEffect(() => {
-    console.log("camera test,", camera);
-  }, [camera]);
-
-  useEffect(() => {
-    console.log("peer test,", peer);
-  }, [peer]);
 
   const handleBug = () => {
     if (localStream) {
