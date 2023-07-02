@@ -43,7 +43,7 @@ export default function ChannelBar({ userList }: any) {
                   className="p-2 hover:bg-primary-200 rounded-md text-secondary-100 text-heading-small-7-standard whitespace-nowrap overflow-hidden text-ellipsis"
                   key={userObj.userPeerId}
                 >
-                  {userObj.userPeerId}
+                  {userObj.userName}
                 </li>
               ))}
             </ul>

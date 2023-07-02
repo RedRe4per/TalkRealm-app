@@ -1,3 +1,4 @@
+import { uniqueNamesGenerator, Config, adjectives, colors, animals } from 'unique-names-generator';
 import { GetServerSidePropsContext } from "next";
 import { VideoChat } from "@/components/Video/UserMedia";
 import SideBar from "@/components/SideBar";
@@ -13,6 +14,12 @@ type UserList = {
   userId: string;
   userPeerId: string;
   userName: string;
+};
+
+const customConfig: Config = {
+  dictionaries: [adjectives, colors],
+  separator: '-',
+  length: 2,
 };
 
 export default function Room(roomInfo: Props) {
@@ -48,7 +55,7 @@ export default function Room(roomInfo: Props) {
 
       peer.on("open", (id: string) => {
         console.log("My peer ID is: " + id, socketIo);
-        socketIo.emit("I-connected", {userId: "created by database", userPeerId: id, userName: "customized"});
+        socketIo.emit("I-connected", {userId: "created by database", userPeerId: id, userName: uniqueNamesGenerator(customConfig)});
         myPeerId = id;
       });
     });

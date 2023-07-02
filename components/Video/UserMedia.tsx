@@ -256,7 +256,7 @@ export const VideoChat = ({
                   (remoteStream: any) => remoteStream.userPeerId === userObj.userPeerId
                 ) < 0 ? (
                   <li className="w-[180px] h-[136px] px-3 py-2 bg-primary-400 text-secondary rounded-xl border-2 border-secondary-400">
-                    {userObj.userPeerId}
+                    {userObj.userName}
                   </li>
                 ) : (
                   <video
