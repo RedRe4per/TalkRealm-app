@@ -1,14 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
-import usePrevious from "@/hooks/usePrevious";
+import { Socket } from "socket.io-client";
+import { UserObj, IUserProps } from "@/interfaces/socket";
 
 interface Props {
   muted: boolean;
   camera: boolean;
   shareScreen: boolean;
-  socket: any;
+  socket: Socket;
   peer: any;
-  userList: any;
+  userList: UserObj[];
 }
+
+type StreamObject = {
+  userPeerId: string;
+  stream: MediaStream;
+};
 
 export const VideoChat = ({
   muted,
@@ -20,13 +26,11 @@ export const VideoChat = ({
 }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const screenRef = useRef<HTMLVideoElement>(null);
-  const [localStream, setLocalStream] = useState<any>(null);
-  const [remoteStreams, setRemoteStreams] = useState<any>([]);
-  const [remoteUserPeerId, setRemoteUserPeerId] = useState<string[]>([]);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [remoteStreams, setRemoteStreams] = useState<StreamObject[]>([]);
   const [outgoingCalls, setOutgoingCalls] = useState<any[]>([]);
-  const prevCamera = usePrevious(camera);
   const [currentCalls, setCurrentCalls] = useState<any[]>([]);
-  const [sharedStreams, setSharedStreams] = useState<any[]>([]);
+  const [sharedStreams, setSharedStreams] = useState<MediaStream[]>([]);
 
   // useEffect(() => {
   //   const startScreenShare = async () => {
@@ -87,7 +91,7 @@ export const VideoChat = ({
 
   useEffect(() => {
     if (peer && camera) {
-      const handler = ({ userObj: userObj }: any) => {
+      const handler = ({ userObj: userObj }: IUserProps) => {
         shareVideo(userObj.userPeerId);
       };
       socket.on("user-connected", handler);
@@ -99,14 +103,13 @@ export const VideoChat = ({
   }, [peer, camera]);
 
   useEffect(() => {
-    const handleRemoteCameraClose = (outgoingIds: any[]) => {
+    const handleRemoteCameraClose = (outgoingIds: string[]) => {
       const newCalls = currentCalls.filter((call: any) => {
         if (outgoingIds.includes(call.connectionId)) {
-          setRemoteStreams((prevStreams: any) =>
-            prevStreams.filter((stream: any) => stream.userPeerId !== call.peer)
-          );
-          setRemoteUserPeerId((prev: any) =>
-            prev.filter((item: any) => call.peer !== item)
+          setRemoteStreams((prevStreams: StreamObject[]) =>
+            prevStreams.filter(
+              (stream: StreamObject) => stream.userPeerId !== call.peer
+            )
           );
           call.close();
           return false;
@@ -138,11 +141,14 @@ export const VideoChat = ({
             stream: stream,
           };
           setLocalStream(stream);
-          setRemoteStreams((prevStreams: any) => [...prevStreams, myStream]);
+          setRemoteStreams((prevStreams: StreamObject[]) => [
+            ...prevStreams,
+            myStream,
+          ]);
 
           userList
-            .filter((userObj: any) => userObj.userPeerId !== peer.id)
-            .forEach((userObj: any) => {
+            .filter((userObj: UserObj) => userObj.userPeerId !== peer.id)
+            .forEach((userObj: UserObj) => {
               shareVideo(userObj.userPeerId);
             });
         })
@@ -158,13 +164,15 @@ export const VideoChat = ({
         call.close();
       });
       setOutgoingCalls([]);
-      setRemoteStreams((prev: any) =>
-        prev.filter((item: any) => item.userPeerId !== peer.id)
+      setRemoteStreams((prev: StreamObject[]) =>
+        prev.filter((item: StreamObject) => item.userPeerId !== peer.id)
       );
       if (localStream) {
-        localStream.getTracks().forEach((track: any) => track.stop());
-        sharedStreams.forEach((stream: any) => {
-          stream.getTracks().forEach((track: any) => track.stop());
+        localStream
+          .getTracks()
+          .forEach((track: MediaStreamTrack) => track.stop());
+        sharedStreams.forEach((stream: MediaStream) => {
+          stream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
         });
       }
     }
@@ -175,34 +183,28 @@ export const VideoChat = ({
     if (peer) {
       peer.on("call", (call: any) => {
         setCurrentCalls((prevCalls) => [...prevCalls, call]);
-        setRemoteUserPeerId((prev: any) => {
-          if (!prev.includes(call.peer)) {
-            return [...prev, call.peer];
-          } else {
-            return prev;
-          }
-        });
-
         if (!camera) {
           const emptyStream = new MediaStream();
           call.answer(emptyStream);
         } else {
           call.answer(localStream);
         }
-        call.on("stream", function (remoteStream: any) {
+        call.on("stream", function (remoteStream: MediaStream) {
           const newStream = {
             userPeerId: call.peer,
             stream: remoteStream,
           };
-          setRemoteStreams((prevStreams: any) => [...prevStreams, newStream]);
+          setRemoteStreams((prevStreams: StreamObject[]) => [
+            ...prevStreams,
+            newStream,
+          ]);
         });
 
         call.on("close", function () {
-          setRemoteStreams((prevStreams: any) =>
-            prevStreams.filter((stream: any) => stream.userPeerId !== call.peer)
-          );
-          setRemoteUserPeerId((prev: any) =>
-            prev.filter((item: any) => call.peer !== item)
+          setRemoteStreams((prevStreams: StreamObject[]) =>
+            prevStreams.filter(
+              (stream: StreamObject) => stream.userPeerId !== call.peer
+            )
           );
         });
       });
@@ -226,11 +228,11 @@ export const VideoChat = ({
       </button>
       <section>
         <ul className="flex gap-3 p-4 bg-primary-100">
-          {userList.map((userObj: any) => {
+          {userList.map((userObj: UserObj) => {
             return (
               <div key={userObj.userPeerId}>
                 {remoteStreams.findIndex(
-                  (remoteStream: any) =>
+                  (remoteStream: StreamObject) =>
                     remoteStream.userPeerId === userObj.userPeerId
                 ) < 0 ? (
                   <li className="w-[180px] h-[136px] px-3 py-2 bg-primary-400 text-secondary rounded-xl border-2 border-secondary-400">
@@ -244,12 +246,18 @@ export const VideoChat = ({
                         ? "border-quaternary"
                         : "border-secondary-400"
                     }`}
-                    ref={(ref) =>
-                      ref &&
-                      (ref.srcObject = remoteStreams.find(
-                        (item: any) => item.userPeerId === userObj.userPeerId
-                      )?.stream)
-                    }
+                    ref={(ref) => {
+                      if (ref) {
+                        const stream = remoteStreams.find(
+                          (remoteStream: StreamObject) =>
+                            remoteStream.userPeerId === userObj.userPeerId
+                        )?.stream;
+
+                        if (stream) {
+                          ref.srcObject = stream;
+                        }
+                      }
+                    }}
                     autoPlay
                     playsInline
                     muted

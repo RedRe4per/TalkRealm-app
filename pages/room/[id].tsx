@@ -10,16 +10,11 @@ import SideBar from "@/components/SideBar";
 import { useState, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import useBeforeUnload from "@/hooks/useBeforeUnload";
+import { UserObj, IUserProps, IUserIdProps } from "@/interfaces/socket";
 
 interface Props {
   roomInfo: any;
 }
-
-type UserObj = {
-  userId: string;
-  userPeerId: string;
-  userName: string;
-};
 
 const customConfig: Config = {
   dictionaries: [adjectives, colors],
@@ -42,13 +37,16 @@ export default function Room(roomInfo: Props) {
       console.log(message);
     });
 
-    socketIo.on("user-connected", ({ userObj: userObj, users: users }: any) => {
-      setUserList(users);
-    });
+    socketIo.on(
+      "user-connected",
+      ({ userObj: userObj, users: users }: IUserProps) => {
+        setUserList(users);
+      }
+    );
 
     socketIo.on(
       "user-disconnected",
-      ({ userId: userId, users: users }: any) => {
+      ({ userId: userId, users: users }: IUserIdProps) => {
         setUserList(users);
       }
     );
