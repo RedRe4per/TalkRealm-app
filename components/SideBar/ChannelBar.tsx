@@ -38,12 +38,12 @@ export default function ChannelBar({ userList }: any) {
         <ul role="list" className="flex flex-1 flex-col gap-y-7">
           <li>
             <ul role="list" className="-mx-2 space-y-1 flex flex-col gap-1">
-              {userList.map((user: any) => (
+              {userList.map((userObj: any) => (
                 <li
                   className="p-2 hover:bg-primary-200 rounded-md text-secondary-100 text-heading-small-7-standard whitespace-nowrap overflow-hidden text-ellipsis"
-                  key={user}
+                  key={userObj.userPeerId}
                 >
-                  {user}
+                  {userObj.userPeerId}
                 </li>
               ))}
             </ul>

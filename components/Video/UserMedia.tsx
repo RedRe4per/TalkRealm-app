@@ -24,7 +24,7 @@ export const VideoChat = ({
   const previewRef = useRef<HTMLVideoElement>(null);
   const [localStream, setLocalStream] = useState<any>(null);
   const [remoteStreams, setRemoteStreams] = useState<any>([]);
-  const [remoteUserId, setRemoteUserId] = useState<string>("");
+  const [remoteUserPeerId, setRemoteUserPeerId] = useState<string>("");
   const [currentCall, setCurrentCall] = useState<any>(null);
   const [localVideoStreamId, setLocalVideoStreamId] = useState("");
 
@@ -141,17 +141,17 @@ export const VideoChat = ({
   //   });
   // };
 
-  const shareVideo = (userId: string) => {
+  const shareVideo = (userPeerId: string) => {
     //if(userId !== peer.id){
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
       const config = { video: true, audio: muted }; //此处找到之前的bug。如果把video的value设置为状态变量，会导致状态变化时此处不变化。
 
-      console.log("shared video to user", userId, "camera1:", camera);
+      console.log("shared video to user", userPeerId, "camera1:", camera);
       navigator.mediaDevices
         .getUserMedia(config)
         .then((stream) => {
           console.log("local stream from connected to new user", stream);
-          const call = peer.call(userId, stream);
+          const call = peer.call(userPeerId, stream);
           //peers[userId] = call;
           call.on("close", () => {
             videoRef.current?.remove();
@@ -167,8 +167,8 @@ export const VideoChat = ({
   useEffect(() => {
     //新用户登入room时连接。无论任何状态，都发送stream。
     if (peer && camera) {
-      socket.on("user-connected", ({ userId: userId, users: users }: any) => {
-        shareVideo(userId);
+      socket.on("user-connected", ({ userObj: userObj, users: users }: any) => {
+        shareVideo(userObj.userPeerId);
       });
     }
   }, [peer, camera]);
@@ -189,7 +189,7 @@ export const VideoChat = ({
             setLocalStream(stream.clone());
           }
           const newStream = {
-            id: peer.id,
+            userPeerId: peer.id,
             stream: stream,
           };
           setRemoteStreams((prevStreams: any) => [...prevStreams, newStream]);
@@ -199,8 +199,8 @@ export const VideoChat = ({
           //   setCurrentCall(null);
           // }
 
-          console.log("remoteUserId", remoteUserId);
-          shareVideo(remoteUserId);
+          console.log("remoteUserId", remoteUserPeerId);
+          shareVideo(remoteUserPeerId);
         })
         .catch((err) => {
           console.error("Error accessing media devices.", err);
@@ -211,7 +211,7 @@ export const VideoChat = ({
   useEffect(() => {
     if (peer) {
       peer.on("call", (call: any) => {
-        setRemoteUserId(call.peer);
+        setRemoteUserPeerId(call.peer);
         setCurrentCall(call);
 
         if (!camera) {
@@ -224,7 +224,7 @@ export const VideoChat = ({
         }
         call.on("stream", function (remoteStream: any) {
           const newStream = {
-            id: call.peer,
+            userPeerId: call.peer,
             stream: remoteStream,
           };
           setRemoteStreams((prevStreams: any) => [...prevStreams, newStream]);
@@ -249,27 +249,27 @@ export const VideoChat = ({
     <div>
       <section>
         <ul className="flex gap-3 p-4 bg-primary-100">
-          {userList.map((user: any) => {
+          {userList.map((userObj: any) => {
             return (
-              <div key={user}>
+              <div key={userObj.userPeerId}>
                 {remoteStreams.findIndex(
-                  (remoteStream: any) => remoteStream.id === user
+                  (remoteStream: any) => remoteStream.userPeerId === userObj.userPeerId
                 ) < 0 ? (
                   <li className="w-[180px] h-[136px] px-3 py-2 bg-primary-400 text-secondary rounded-xl border-2 border-secondary-400">
-                    {user}
+                    {userObj.userPeerId}
                   </li>
                 ) : (
                   <video
-                    key={user}
+                    key={userObj.userPeerId}
                     className={`w-[180px] h-[136px] rounded-xl border-2 ${
-                      user === peer.id
-                        ? "border-green-500"
+                      userObj.userPeerId === peer.id
+                        ? "border-quaternary"
                         : "border-secondary-400"
                     }`}
                     ref={(ref) =>
                       ref &&
                       (ref.srcObject = remoteStreams.find(
-                        (item: any) => item.id === user
+                        (item: any) => item.userPeerId === userObj.userPeerId
                       )?.stream)
                     }
                     autoPlay

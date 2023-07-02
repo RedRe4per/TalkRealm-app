@@ -11,6 +11,7 @@ interface Props {
 
 type UserList = {
   userId: string;
+  userPeerId: string;
   userName: string;
 };
 
@@ -30,7 +31,7 @@ export default function Room(roomInfo: Props) {
       console.log(message);
     });
 
-    socketIo.on("user-connected", ({ userId: userId, users: users }: any) => {
+    socketIo.on("user-connected", ({ userObj: userObj, users: users }: any) => {
       setUserList(users);
     });
 
@@ -47,7 +48,7 @@ export default function Room(roomInfo: Props) {
 
       peer.on("open", (id: string) => {
         console.log("My peer ID is: " + id, socketIo);
-        socketIo.emit("I-connected", id);
+        socketIo.emit("I-connected", {userId: "created by database", userPeerId: id, userName: "customized"});
         myPeerId = id;
       });
     });
