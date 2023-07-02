@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import usePrevious from "@/hooks/usePrevious";
 
 interface Props {
   muted: boolean;
@@ -24,8 +25,9 @@ export const VideoChat = ({
   const [localStream, setLocalStream] = useState<any>(null);
   const [remoteStreams, setRemoteStreams] = useState<any>([]);
   const [remoteUserPeerId, setRemoteUserPeerId] = useState<string[]>([]);
-  const [currentCall, setCurrentCall] = useState<any>(null);
   const [outgoingCalls, setOutgoingCalls] = useState<any[]>([]);
+  const prevCamera = usePrevious(camera);
+  const [currentCalls, setCurrentCalls] = useState<any[]>([]);
 
   // useEffect(() => {
   //   const startScreenShare = async () => {
@@ -91,6 +93,25 @@ export const VideoChat = ({
     }
   }, [peer, camera]);
 
+
+  useEffect(() => {
+    const handleRemoteCameraClose = (outgoingIds: any[]) => {
+        const newCalls = currentCalls.filter((call: any) => {
+          if(outgoingIds.includes(call.connectionId)){
+              call.close();
+              return false;
+          } else {
+              return true;
+          }
+      });
+        setCurrentCalls(newCalls);
+    }
+    socket.on("remote-camera-close", handleRemoteCameraClose);
+    return () => {
+        socket.off("remote-camera-close", handleRemoteCameraClose);
+    }
+}, [socket, currentCalls]);
+
   useEffect(() => {
     //开摄像头时，打开本地preview。2.关闭目前的空单向stream。3.重新建立peer.call，把本地stream发送给room内所有人。
     //此处需要满足需求：假设客户端A打开页面时没有share video，客户端B打开时也没有share video。此时客户端A打开share video，客户端B需要能接收到。
@@ -108,10 +129,8 @@ export const VideoChat = ({
             userPeerId: peer.id,
             stream: stream,
           };
-          setLocalStream(stream); //.clone()
+          setLocalStream(stream);
           setRemoteStreams((prevStreams: any) => [...prevStreams, myStream]);
-
-          // 这里也许可以加入逻辑，移除当前所有peer.call，然后重新连接？
 
           console.log("remoteUserId", remoteUserPeerId);
           userList
@@ -124,25 +143,33 @@ export const VideoChat = ({
           console.error("Error accessing media devices.", err);
         });
     } else {
-      outgoingCalls.forEach((call) => {
-        call.close();
-      });
-      setOutgoingCalls([]);
-      setRemoteStreams((prev: any) =>
-        prev.filter((item: any) => item.userPeerId !== peer.id)
-      );
-      if (localStream) {
-        localStream.getTracks().forEach((track: any) => track.stop());
-        //setLocalStream(null);
+      if (prevCamera === true && camera === false) {
+        const outgoingIds: string[] = outgoingCalls.map((outgoingCall: any) => {
+          return outgoingCall.connectionId;
+        });
+        console.log("outgoingCalls",outgoingCalls)
+        socket.emit("camera-close", outgoingIds);
+        outgoingCalls.forEach((call) => {
+          call.close();
+        });
+        setOutgoingCalls([]);
+        setRemoteStreams((prev: any) =>
+          prev.filter((item: any) => item.userPeerId !== peer.id)
+        );
+        if (localStream) {
+          localStream.getTracks().forEach((track: any) => track.stop());
+          //setLocalStream(null);
+        }
       }
     }
-  }, [camera]);
+  }, [camera, prevCamera]);
 
   useEffect(() => {
     //接收远程peer时处理
     if (peer) {
       peer.on("call", (call: any) => {
-        setCurrentCall(call);
+        //   currentCalls.findIndex((item: any) => item.connectionId === call.connectionId) < 0
+        setCurrentCalls(prevCalls => [...prevCalls, call]);
         setRemoteUserPeerId((prev: any) => {
           if (!prev.includes(call.peer)) {
             return [...prev, call.peer];
@@ -166,6 +193,7 @@ export const VideoChat = ({
         });
 
         call.on("close", function () {
+          //测试，无法监测到发送方直接关闭摄像头或者直接关闭页面
           console.log("close 11111111111111111111");
           setRemoteStreams((prevStreams: any) =>
             prevStreams.filter((stream: any) => stream.userPeerId !== call.peer)
@@ -185,13 +213,15 @@ export const VideoChat = ({
   }, [peer, camera]);
 
   const handleBug = () => {
-    if (localStream) {
-      const tracks = localStream.getTracks();
-      console.log(tracks);
-      tracks.forEach((track: any) =>
-        console.log(track.kind, track.enabled, track.readyState)
-      );
-    }
+    // if (localStream) {
+    //   const tracks = localStream.getTracks();
+    //   console.log(tracks);
+    //   tracks.forEach((track: any) =>
+    //     console.log(track.kind, track.enabled, track.readyState)
+    //   );
+    // }
+    console.log("outgoingCalls debug",outgoingCalls)
+    //currentCall.close()
   };
 
   return (
@@ -235,18 +265,6 @@ export const VideoChat = ({
           })}
         </ul>
       </section>
-      {/* <section>
-        {remoteStreams.map((streamObj: any, index: number) => (
-          <video
-            key={index}
-            className="w-[40vw]"
-            ref={(ref) => ref && (ref.srcObject = streamObj.stream)}
-            autoPlay
-            playsInline
-            muted
-          />
-        ))}
-      </section> */}
       <video className="w-[40vw]" ref={screenRef} autoPlay playsInline />
     </div>
   );

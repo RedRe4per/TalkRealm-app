@@ -60,7 +60,6 @@ export default function Room(roomInfo: Props) {
       setPeer(peer);
 
       peer.on("open", (id: string) => {
-        console.log("My peer ID is: " + id, socketIo);
         socketIo.emit("I-connected", {
           userId: "created by database",
           userPeerId: id,
@@ -78,10 +77,6 @@ export default function Room(roomInfo: Props) {
       }
     };
   }, []);
-
-  useEffect(() => {
-    console.log("userList", userList);
-  }, [userList]);
 
   const handleMessage = () => {
     console.log("userList", userList);
