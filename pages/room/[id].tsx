@@ -3,12 +3,11 @@ import {
   Config,
   adjectives,
   colors,
-  animals,
 } from "unique-names-generator";
 import { GetServerSidePropsContext } from "next";
 import { VideoChat } from "@/components/Video/UserMedia";
 import SideBar from "@/components/SideBar";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import useBeforeUnload from "@/hooks/useBeforeUnload";
 
@@ -36,7 +35,6 @@ export default function Room(roomInfo: Props) {
   const [userList, setUserList] = useState<UserObj[]>([]);
   let socketIo: Socket = io(`${process.env.NEXT_PUBLIC_SERVER_ADDRESS}`);
   let myPeerId: string = "";
-  const peers = {};
   useBeforeUnload();
 
   useEffect(() => {
@@ -106,7 +104,6 @@ export default function Room(roomInfo: Props) {
           shareScreen={shareScreen}
           socket={socketIo}
           peer={peer}
-          peers={peers}
           userList={userList}
         />
       </section>

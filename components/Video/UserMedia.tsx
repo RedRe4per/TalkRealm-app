@@ -7,7 +7,6 @@ interface Props {
   shareScreen: boolean;
   socket: any;
   peer: any;
-  peers: any;
   userList: any;
 }
 
@@ -17,7 +16,6 @@ export const VideoChat = ({
   shareScreen,
   socket,
   peer,
-  peers,
   userList,
 }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -93,29 +91,26 @@ export const VideoChat = ({
     }
   }, [peer, camera]);
 
-
   useEffect(() => {
     const handleRemoteCameraClose = (outgoingIds: any[]) => {
-        const newCalls = currentCalls.filter((call: any) => {
-          if(outgoingIds.includes(call.connectionId)){
-              call.close();
-              return false;
-          } else {
-              return true;
-          }
+      const newCalls = currentCalls.filter((call: any) => {
+        if (outgoingIds.includes(call.connectionId)) {
+          call.close();
+          return false;
+        } else {
+          return true;
+        }
       });
-        setCurrentCalls(newCalls);
-    }
+      setCurrentCalls(newCalls);
+    };
     socket.on("remote-camera-close", handleRemoteCameraClose);
     return () => {
-        socket.off("remote-camera-close", handleRemoteCameraClose);
-    }
-}, [socket, currentCalls]);
+      socket.off("remote-camera-close", handleRemoteCameraClose);
+    };
+  }, [socket, currentCalls]);
 
   useEffect(() => {
-    //开摄像头时，打开本地preview。2.关闭目前的空单向stream。3.重新建立peer.call，把本地stream发送给room内所有人。
-    //此处需要满足需求：假设客户端A打开页面时没有share video，客户端B打开时也没有share video。此时客户端A打开share video，客户端B需要能接收到。
-    //因此，需要率先获得全房间所有userId，然后遍历shareVideo。
+    //开摄像头时，打开本地preview。2.关闭目前的空单向stream。3.重新建立peer.call
     if (
       "mediaDevices" in navigator &&
       navigator.mediaDevices.getUserMedia &&
@@ -147,7 +142,7 @@ export const VideoChat = ({
         const outgoingIds: string[] = outgoingCalls.map((outgoingCall: any) => {
           return outgoingCall.connectionId;
         });
-        console.log("outgoingCalls",outgoingCalls)
+        console.log("outgoingCalls", outgoingCalls);
         socket.emit("camera-close", outgoingIds);
         outgoingCalls.forEach((call) => {
           call.close();
@@ -169,7 +164,7 @@ export const VideoChat = ({
     if (peer) {
       peer.on("call", (call: any) => {
         //   currentCalls.findIndex((item: any) => item.connectionId === call.connectionId) < 0
-        setCurrentCalls(prevCalls => [...prevCalls, call]);
+        setCurrentCalls((prevCalls) => [...prevCalls, call]);
         setRemoteUserPeerId((prev: any) => {
           if (!prev.includes(call.peer)) {
             return [...prev, call.peer];
@@ -220,7 +215,7 @@ export const VideoChat = ({
     //     console.log(track.kind, track.enabled, track.readyState)
     //   );
     // }
-    console.log("outgoingCalls debug",outgoingCalls)
+    console.log("outgoingCalls debug", outgoingCalls);
     //currentCall.close()
   };
 
