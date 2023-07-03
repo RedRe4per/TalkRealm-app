@@ -24,7 +24,7 @@ const customConfig: Config = {
 };
 
 export default function Room(roomInfo: Props) {
-  const [muted, setMuted] = useState(false);
+  const [voice, setVoice] = useState(false);
   const [camera, setCamera] = useState(false);
   const [shareScreen, setShareScreen] = useState(false);
   const [peer, setPeer] = useState<Peer | null>(null);
@@ -86,8 +86,8 @@ export default function Room(roomInfo: Props) {
     <main className="flex">
       <SideBar
         userList={userList}
-        muted={muted}
-        setMuted={setMuted}
+        voice={voice}
+        setVoice={setVoice}
         camera={camera}
         setCamera={setCamera}
         shareScreen={shareScreen}
@@ -98,7 +98,7 @@ export default function Room(roomInfo: Props) {
           send message
         </button> */}
         <VideoChat
-          muted={muted}
+          voice={voice}
           camera={camera}
           shareScreen={shareScreen}
           socket={socketIo}

@@ -4,7 +4,7 @@ import type { Peer, MediaConnection } from "peerjs";
 import { UserObj, IUserProps } from "@/interfaces/socket";
 
 interface Props {
-  muted: boolean;
+  voice: boolean;
   camera: boolean;
   shareScreen: boolean;
   socket: Socket;
@@ -18,7 +18,7 @@ type StreamObject = {
 };
 
 export const VideoChat = ({
-  muted,
+  voice,
   camera,
   shareScreen,
   socket,
@@ -32,6 +32,7 @@ export const VideoChat = ({
   const [outgoingCalls, setOutgoingCalls] = useState<MediaConnection[]>([]);
   const [currentCalls, setCurrentCalls] = useState<MediaConnection[]>([]);
   const [sharedStreams, setSharedStreams] = useState<MediaStream[]>([]);
+  const [streamMuted, setStreamMuted] = useState(true);
 
   // useEffect(() => {
   //   const startScreenShare = async () => {
@@ -67,12 +68,31 @@ export const VideoChat = ({
   //   }
   // }, [shareScreen]);
 
+  useEffect(()=>{
+    if(voice){
+      sharedStreams.forEach((stream: any) => {
+        stream.getAudioTracks().forEach((track: any) => {
+          track.enabled = true;
+        });
+      })
+    }else{
+      sharedStreams.forEach((stream: any) => {
+        stream.getAudioTracks().forEach((track: any) => {
+          track.enabled = false;
+        });
+      })
+    }
+  }, [voice])
+
   const shareVideo = (userPeerId: string) => {
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
-      const config = { video: true, audio: false };
+      const config = { video: true, audio: true };
       navigator.mediaDevices
         .getUserMedia(config)
         .then((stream) => {
+          stream.getAudioTracks().forEach((track) => {
+            track.enabled = false;
+          });
           const call = peer!.call(userPeerId, stream);
           setOutgoingCalls((prevCalls) => [...prevCalls, call]);
           setSharedStreams((prev) => [...prev, stream]);
@@ -133,7 +153,7 @@ export const VideoChat = ({
       navigator.mediaDevices.getUserMedia &&
       camera
     ) {
-      const config = { video: camera, audio: muted };
+      const config = { video: camera, audio: false };
       navigator.mediaDevices
         .getUserMedia(config)
         .then((stream) => {
@@ -221,7 +241,13 @@ export const VideoChat = ({
   }, [peer, camera]);
 
   const handleBug = () => {
-    console.log();
+    // sharedStreams.forEach((stream: any) => {
+    //   stream.getAudioTracks().forEach((track: any) => {
+    //     track.enabled = true;
+    //   });
+    // })
+    // console.log();
+    setStreamMuted(false);
   };
 
   return (
@@ -263,7 +289,7 @@ export const VideoChat = ({
                     }}
                     autoPlay
                     playsInline
-                    muted
+                    muted={streamMuted}
                   />
                 )}
               </div>

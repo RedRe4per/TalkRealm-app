@@ -4,8 +4,8 @@ import FunctionBar from "./FunctionBar";
 import { UserObj } from "@/interfaces/socket";
 
 interface Props {
-  muted: boolean;
-  setMuted: (param: boolean) => void;
+  voice: boolean;
+  setVoice: (param: boolean) => void;
   camera: boolean;
   setCamera: (param: boolean) => void;
   shareScreen: boolean;
@@ -14,8 +14,8 @@ interface Props {
 }
 
 export default function SideBar({
-  muted,
-  setMuted,
+  voice,
+  setVoice,
   camera,
   setCamera,
   shareScreen,
@@ -27,8 +27,8 @@ export default function SideBar({
       <TitleBar />
       <ChannelBar userList={userList} />
       <FunctionBar
-        muted={muted}
-        setMuted={setMuted}
+        voice={voice}
+        setVoice={setVoice}
         camera={camera}
         setCamera={setCamera}
         shareScreen={shareScreen}

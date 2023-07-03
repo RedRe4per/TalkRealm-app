@@ -8,8 +8,8 @@ import {
 } from "@heroicons/react/20/solid";
 
 interface Props {
-  muted: boolean;
-  setMuted: (param: boolean) => void;
+  voice: boolean;
+  setVoice: (param: boolean) => void;
   camera: boolean;
   setCamera: (param: boolean) => void;
   shareScreen: boolean;
@@ -17,8 +17,8 @@ interface Props {
 }
 
 export default function FunctionBar({
-  muted,
-  setMuted,
+  voice,
+  setVoice,
   camera,
   setCamera,
   shareScreen,
@@ -30,9 +30,9 @@ export default function FunctionBar({
         <li>
           <button
             className={`${
-              muted ? "bg-quaternary" : "bg-primary-400 hover:bg-primary"
+              voice ? "bg-quaternary" : "bg-primary-400 hover:bg-primary"
             } room-function-bar-button`}
-            onClick={() => setMuted(!muted)}
+            onClick={() => setVoice(!voice)}
           >
             <SpeakerWaveIcon
               className="h-5 w-5 text-secondary"
