@@ -29,7 +29,10 @@ export default function Room(roomInfo: Props) {
   const [shareScreen, setShareScreen] = useState(false);
   const [peer, setPeer] = useState<Peer | null>(null);
   const [userList, setUserList] = useState<UserObj[]>([]);
-  const socketIo = useMemo(() => io(`${process.env.NEXT_PUBLIC_SERVER_ADDRESS}`), []);
+  const socketIo = useMemo(
+    () => io(`${process.env.NEXT_PUBLIC_SERVER_ADDRESS}`),
+    []
+  );
   let myPeerId: string = "";
   useBeforeUnload();
 

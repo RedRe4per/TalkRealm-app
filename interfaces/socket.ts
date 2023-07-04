@@ -4,6 +4,11 @@ export type UserObj = {
   userName: string;
 };
 
+export type StreamObject = {
+  userPeerId: string;
+  stream: MediaStream;
+};
+
 export interface IUserProps {
   userObj: UserObj;
   users: UserObj[];

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Socket } from "socket.io-client";
 import type { Peer, MediaConnection } from "peerjs";
-import { UserObj, IUserProps } from "@/interfaces/socket";
-import { UserVideo } from "./UserVideo";
+import { UserObj, IUserProps, StreamObject } from "@/interfaces/socket";
+import { UserVideoCard } from "./UserVideoCard";
 
 interface Props {
   voice: boolean;
@@ -12,11 +12,6 @@ interface Props {
   peer: Peer | null;
   userList: UserObj[];
 }
-
-export type StreamObject = {
-  userPeerId: string;
-  stream: MediaStream;
-};
 
 export const VideoChat = ({
   voice,
@@ -87,18 +82,17 @@ export const VideoChat = ({
       socket.emit("voice-off", peer.id);
     }
   }, [voice, peer]);
-    
-    useEffect(() => {
-      const handleRemoteVoiceOn = (peerId: string) => {
-      }
 
-      socket.on("remote-voice-on", handleRemoteVoiceOn);
+  //   useEffect(() => {
+  //     const handleRemoteVoiceOn = (peerId: string) => {
+  //     }
 
-      return ()=>{
-        socket.off("remote-voice-on", handleRemoteVoiceOn);
-      }
-  }, [socket]);
-  
+  //     socket.on("remote-voice-on", handleRemoteVoiceOn);
+
+  //     return ()=>{
+  //       socket.off("remote-voice-on", handleRemoteVoiceOn);
+  //     }
+  // }, [socket]);
 
   const shareVideo = (userPeerId: string) => {
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
@@ -233,10 +227,19 @@ export const VideoChat = ({
             userPeerId: call.peer,
             stream: remoteStream,
           };
-          setRemoteStreams((prevStreams: StreamObject[]) => [
-            ...prevStreams,
-            newStream,
-          ]);
+          setRemoteStreams((prevStreams: StreamObject[]) => {
+            const isStreamExist = prevStreams.some(
+              (prevStream) =>
+                prevStream.userPeerId === newStream.userPeerId &&
+                prevStream.stream.id === newStream.stream.id
+            );
+
+            if (!isStreamExist) {
+              return [...prevStreams, newStream];
+            } else {
+              return prevStreams;
+            }
+          });
         });
 
         call.on("close", function () {
@@ -272,7 +275,7 @@ export const VideoChat = ({
         <ul className="flex gap-3 p-4 bg-primary-100">
           {userList.map((userObj: UserObj) => {
             return (
-              <UserVideo
+              <UserVideoCard
                 key={userObj.userPeerId}
                 userObj={userObj}
                 remoteStreams={remoteStreams}
