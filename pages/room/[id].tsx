@@ -64,6 +64,7 @@ export default function Room(roomInfo: Props) {
           userId: "created by database",
           userPeerId: id,
           userName: uniqueNamesGenerator(customConfig),
+          voice: false,
         });
         myPeerId = id;
       });

@@ -18,14 +18,16 @@ interface Props {
 
 export const UserVideoCard = React.memo(
   ({ userObj, remoteStreams, peer, socket, isRoomMuted }: Props) => {
-    const [isRemoteMuted, setIsRemoteMuted] = useState(true);
+    const [isRemoteMuted, setIsRemoteMuted] = useState(!userObj.voice);
 
     const remoteStream = remoteStreams.find(
       (remoteStream) => remoteStream.userPeerId === userObj.userPeerId
     );
 
     useEffect(() => {
-      RemoteAudioTracksOff(remoteStream);
+      isRemoteMuted
+        ? RemoteAudioTracksOff(remoteStream)
+        : RemoteAudioTracksOn(remoteStream);
       const handleRemoteVoiceOn = (peerId: string) => {
         if (peerId === remoteStream?.userPeerId) {
           RemoteAudioTracksOn(remoteStream);

@@ -2,6 +2,7 @@ export type UserObj = {
   userId: string;
   userPeerId: string;
   userName: string;
+  voice: boolean;
 };
 
 export type StreamObject = {
