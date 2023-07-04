@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import type { Peer } from "peerjs";
 import { Socket } from "socket.io-client";
 import { UserObj, StreamObject } from "@/interfaces/socket";
+import { SpeakerWaveIcon, SpeakerXMarkIcon } from "@heroicons/react/20/solid";
 import {
   RemoteAudioTracksOff,
   RemoteAudioTracksOn,
@@ -12,13 +13,13 @@ interface Props {
   peer: Peer | null;
   userObj: UserObj;
   remoteStreams: StreamObject[];
-  streamMuted: boolean;
   socket: Socket;
+  isRoomMuted: boolean;
 }
 
 export const UserVideoCard = React.memo(
-  ({ userObj, remoteStreams, peer, streamMuted, socket }: Props) => {
-    const [isMuted, setIsMuted] = useState(true);
+  ({ userObj, remoteStreams, peer, socket, isRoomMuted }: Props) => {
+    const [isRemoteMuted, setIsRemoteMuted] = useState(true);
 
     const remoteStream = remoteStreams.find(
       (remoteStream) => remoteStream.userPeerId === userObj.userPeerId
@@ -28,14 +29,14 @@ export const UserVideoCard = React.memo(
       RemoteAudioTracksOff(remoteStream);
       const handleRemoteVoiceOn = (peerId: string) => {
         if (peerId === remoteStream?.userPeerId) {
-          setIsMuted(false);
           RemoteAudioTracksOn(remoteStream);
+          setIsRemoteMuted(false);
         }
       };
       const handleRemoteVoiceOff = (peerId: string) => {
         if (peerId === remoteStream?.userPeerId) {
-          setIsMuted(true);
           RemoteAudioTracksOff(remoteStream);
+          setIsRemoteMuted(true);
         }
       };
       socket.on("remote-voice-on", handleRemoteVoiceOn);
@@ -62,21 +63,42 @@ export const UserVideoCard = React.memo(
                 : "border-secondary-400"
             }`}
             ref={(ref) => {
-              if (ref) {
-                remoteStream?.stream;
-                console.log("first");
-                if (remoteStream?.stream) {
-                  ref.srcObject = remoteStream?.stream;
-                }
+              if (ref && remoteStream?.stream) {
+                ref.srcObject = remoteStream.stream;
               }
             }}
             autoPlay
             playsInline
-            muted={isMuted}
+            muted={isRoomMuted}
           />
         )}
-        <div className="absolute top-0 left-0 w-full h-full bg-transparent">
-          <div>{isMuted ? "a" : "b"}</div>
+        <div className="absolute top-0 left-0 w-full h-full bg-transparent flex flex-col-reverse p-3">
+          {remoteStream && (
+            <div
+              className={`absolute top-0 left-0 w-full h-6 rounded-t-xl border-2 border-b-transparent  bg-gray-800 opacity-50 flex items-center justify-center ${
+                userObj.userPeerId === peer!.id
+                  ? "border-quaternary"
+                  : "border-secondary-400"
+              }`}
+            >
+              <p className="text-secondary-100 text-text-2">
+                {userObj.userName}
+              </p>
+            </div>
+          )}
+          <div className={`${userObj.userPeerId === peer!.id ? "hidden" : ""}`}>
+            {isRemoteMuted ? (
+              <SpeakerXMarkIcon
+                className="h-5 w-5 text-secondary"
+                aria-hidden="true"
+              />
+            ) : (
+              <SpeakerWaveIcon
+                className="h-5 w-5 text-green-400 brightness-125"
+                aria-hidden="true"
+              />
+            )}
+          </div>
         </div>
       </div>
     );

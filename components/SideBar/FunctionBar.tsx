@@ -1,10 +1,7 @@
 import {
-  SpeakerWaveIcon,
-  SpeakerXMarkIcon,
+  MicrophoneIcon,
   VideoCameraIcon,
-  VideoCameraSlashIcon,
   ComputerDesktopIcon,
-  CloudIcon,
 } from "@heroicons/react/20/solid";
 
 interface Props {
@@ -34,7 +31,7 @@ export default function FunctionBar({
             } room-function-bar-button`}
             onClick={() => setVoice(!voice)}
           >
-            <SpeakerWaveIcon
+            <MicrophoneIcon
               className="h-5 w-5 text-secondary"
               aria-hidden="true"
             />

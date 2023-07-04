@@ -23,12 +23,12 @@ export const VideoChat = ({
 }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const screenRef = useRef<HTMLVideoElement>(null);
+  const [isRoomMuted, setIsRoomMuted] = useState(true);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStreams, setRemoteStreams] = useState<StreamObject[]>([]);
   const [outgoingCalls, setOutgoingCalls] = useState<MediaConnection[]>([]);
   const [currentCalls, setCurrentCalls] = useState<MediaConnection[]>([]);
   const [sharedStreams, setSharedStreams] = useState<MediaStream[]>([]);
-  const [streamMuted, setStreamMuted] = useState(true);
 
   // useEffect(() => {
   //   const startScreenShare = async () => {
@@ -82,17 +82,6 @@ export const VideoChat = ({
       socket.emit("voice-off", peer.id);
     }
   }, [voice, peer]);
-
-  //   useEffect(() => {
-  //     const handleRemoteVoiceOn = (peerId: string) => {
-  //     }
-
-  //     socket.on("remote-voice-on", handleRemoteVoiceOn);
-
-  //     return ()=>{
-  //       socket.off("remote-voice-on", handleRemoteVoiceOn);
-  //     }
-  // }, [socket]);
 
   const shareVideo = (userPeerId: string) => {
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
@@ -259,14 +248,8 @@ export const VideoChat = ({
     };
   }, [peer, camera]);
 
-  const handleBug = () => {
-    // sharedStreams.forEach((stream: any) => {
-    //   stream.getAudioTracks().forEach((track: any) => {
-    //     track.enabled = true;
-    //   });
-    // })
-    // console.log();
-    setStreamMuted(false);
+  const handleVoiceOn = () => {
+    setIsRoomMuted(!isRoomMuted);
   };
 
   return (
@@ -281,14 +264,14 @@ export const VideoChat = ({
                 remoteStreams={remoteStreams}
                 peer={peer}
                 socket={socket}
-                streamMuted={streamMuted}
+                isRoomMuted={isRoomMuted}
               />
             );
           })}
         </ul>
       </section>
-      <button className="text-quaternary-400" onClick={handleBug}>
-        find bug
+      <button className="text-quaternary-400" onClick={handleVoiceOn}>
+        Voice on
       </button>
       <video className="w-[40vw]" ref={screenRef} autoPlay playsInline />
     </div>
