@@ -75,6 +75,10 @@ export default function Room(roomInfo: Props) {
     };
   }, []);
 
+  // useEffect(()=>{
+  //     console.log("rerender")
+  // })
+
   const handleMessage = () => {
     console.log("userList", userList);
     if (socketIo) {

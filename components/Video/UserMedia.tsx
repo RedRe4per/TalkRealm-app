@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Socket } from "socket.io-client";
 import type { Peer, MediaConnection } from "peerjs";
 import { UserObj, IUserProps } from "@/interfaces/socket";
+import { UserVideo } from "./UserVideo";
 
 interface Props {
   voice: boolean;
@@ -12,7 +13,7 @@ interface Props {
   userList: UserObj[];
 }
 
-type StreamObject = {
+export type StreamObject = {
   userPeerId: string;
   stream: MediaStream;
 };
@@ -75,12 +76,14 @@ export const VideoChat = ({
           track.enabled = true;
         });
       })
+      // socket.emit("voice-on", peer!.id);
     }else{
       sharedStreams.forEach((stream: any) => {
         stream.getAudioTracks().forEach((track: any) => {
           track.enabled = false;
         });
       })
+      // socket.emit("voice-off", peer!.id);
     }
   }, [voice])
 
@@ -147,7 +150,7 @@ export const VideoChat = ({
   }, [socket, currentCalls]);
 
   useEffect(() => {
-    //开摄像头时，打开本地preview。2.关闭目前的空单向stream。3.重新建立peer.call
+    //开摄像头时，打开本地preview。重新建立peer.call
     if (
       "mediaDevices" in navigator &&
       navigator.mediaDevices.getUserMedia &&
@@ -252,52 +255,24 @@ export const VideoChat = ({
 
   return (
     <div>
-      <button className="text-quaternary-400" onClick={handleBug}>
-        find bug
-      </button>
       <section>
         <ul className="flex gap-3 p-4 bg-primary-100">
           {userList.map((userObj: UserObj) => {
-            return (
-              <div key={userObj.userPeerId}>
-                {remoteStreams.findIndex(
-                  (remoteStream: StreamObject) =>
-                    remoteStream.userPeerId === userObj.userPeerId
-                ) < 0 ? (
-                  <li className="w-[180px] h-[136px] px-3 py-2 bg-primary-400 text-secondary rounded-xl border-2 border-secondary-400">
-                    {userObj.userName}
-                  </li>
-                ) : (
-                  <video
-                    key={userObj.userPeerId}
-                    className={`w-[180px] h-[136px] rounded-xl border-2 ${
-                      userObj.userPeerId === peer!.id
-                        ? "border-quaternary"
-                        : "border-secondary-400"
-                    }`}
-                    ref={(ref) => {
-                      if (ref) {
-                        const stream = remoteStreams.find(
-                          (remoteStream: StreamObject) =>
-                            remoteStream.userPeerId === userObj.userPeerId
-                        )?.stream;
-
-                        if (stream) {
-                          ref.srcObject = stream;
-                        }
-                      }
-                    }}
-                    autoPlay
-                    playsInline
-                    muted={streamMuted}
-                  />
-                )}
-              </div>
-            );
+            return <UserVideo
+            key={userObj.userPeerId}
+            userObj={userObj}
+            remoteStreams={remoteStreams}
+            peer={peer}
+            streamMuted={streamMuted}
+          />
           })}
         </ul>
       </section>
+      <button className="text-quaternary-400" onClick={handleBug}>
+        find bug
+      </button>
       <video className="w-[40vw]" ref={screenRef} autoPlay playsInline />
     </div>
   );
 };
+
