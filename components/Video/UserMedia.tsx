@@ -87,6 +87,18 @@ export const VideoChat = ({
       socket.emit("voice-off", peer.id);
     }
   }, [voice, peer]);
+    
+    useEffect(() => {
+      const handleRemoteVoiceOn = (peerId: string) => {
+      }
+
+      socket.on("remote-voice-on", handleRemoteVoiceOn);
+
+      return ()=>{
+        socket.off("remote-voice-on", handleRemoteVoiceOn);
+      }
+  }, [socket]);
+  
 
   const shareVideo = (userPeerId: string) => {
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
@@ -265,6 +277,7 @@ export const VideoChat = ({
                 userObj={userObj}
                 remoteStreams={remoteStreams}
                 peer={peer}
+                socket={socket}
                 streamMuted={streamMuted}
               />
             );

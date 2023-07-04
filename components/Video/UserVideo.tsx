@@ -1,6 +1,7 @@
 /* eslint-disable react/display-name */
-import React from "react";
+import React, { useEffect, useState } from "react";
 import type { Peer } from "peerjs";
+import { Socket } from "socket.io-client";
 import { UserObj } from "@/interfaces/socket";
 import { StreamObject } from "./UserMedia";
 
@@ -9,10 +10,12 @@ interface Props {
   userObj: UserObj;
   remoteStreams: StreamObject[];
   streamMuted: boolean;
+  socket: Socket;
 }
 
 export const UserVideo = React.memo(
-  ({ userObj, remoteStreams, peer, streamMuted }: Props) => {
+  ({ userObj, remoteStreams, peer, streamMuted, socket }: Props) => {
+
     return (
       <div key={userObj.userPeerId}>
         {remoteStreams.findIndex(

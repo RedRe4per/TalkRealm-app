@@ -7,8 +7,8 @@ import {
 import { GetServerSidePropsContext } from "next";
 import { VideoChat } from "@/components/Video/UserMedia";
 import SideBar from "@/components/SideBar";
-import { useState, useEffect } from "react";
-import { io, Socket } from "socket.io-client";
+import { useState, useEffect, useMemo } from "react";
+import { io } from "socket.io-client";
 import useBeforeUnload from "@/hooks/useBeforeUnload";
 import { UserObj, IUserProps, IUserIdProps } from "@/interfaces/socket";
 import type { Peer } from "peerjs";
@@ -29,12 +29,12 @@ export default function Room(roomInfo: Props) {
   const [shareScreen, setShareScreen] = useState(false);
   const [peer, setPeer] = useState<Peer | null>(null);
   const [userList, setUserList] = useState<UserObj[]>([]);
-  let socketIo: Socket = io(`${process.env.NEXT_PUBLIC_SERVER_ADDRESS}`);
+  const socketIo = useMemo(() => io(`${process.env.NEXT_PUBLIC_SERVER_ADDRESS}`), []);
   let myPeerId: string = "";
   useBeforeUnload();
 
   useEffect(() => {
-    socketIo.on("message", (message) => {
+    socketIo.on("message", (message: any) => {
       console.log(message);
     });
 
