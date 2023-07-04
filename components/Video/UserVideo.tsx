@@ -5,18 +5,18 @@ import { UserObj } from "@/interfaces/socket";
 import { StreamObject } from "./UserMedia";
 
 interface Props {
-    peer: Peer | null;
-    userObj: UserObj;
-    remoteStreams: StreamObject[];
-    streamMuted: boolean;
+  peer: Peer | null;
+  userObj: UserObj;
+  remoteStreams: StreamObject[];
+  streamMuted: boolean;
 }
 
-export const UserVideo = React.memo(({ userObj, remoteStreams, peer, streamMuted }: Props) => {
+export const UserVideo = React.memo(
+  ({ userObj, remoteStreams, peer, streamMuted }: Props) => {
     return (
       <div key={userObj.userPeerId}>
         {remoteStreams.findIndex(
-          (remoteStream) =>
-            remoteStream.userPeerId === userObj.userPeerId
+          (remoteStream) => remoteStream.userPeerId === userObj.userPeerId
         ) < 0 ? (
           <li className="w-[180px] h-[136px] px-3 py-2 bg-primary-400 text-secondary rounded-xl border-2 border-secondary-400">
             {userObj.userName}
@@ -35,7 +35,7 @@ export const UserVideo = React.memo(({ userObj, remoteStreams, peer, streamMuted
                   (remoteStream) =>
                     remoteStream.userPeerId === userObj.userPeerId
                 )?.stream;
-  
+
                 if (stream) {
                   ref.srcObject = stream;
                 }
@@ -48,4 +48,5 @@ export const UserVideo = React.memo(({ userObj, remoteStreams, peer, streamMuted
         )}
       </div>
     );
-  });
+  }
+);

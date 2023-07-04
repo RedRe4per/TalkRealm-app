@@ -69,23 +69,24 @@ export const VideoChat = ({
   //   }
   // }, [shareScreen]);
 
-  useEffect(()=>{
-    if(voice){
+  useEffect(() => {
+    if (!peer) return;
+    if (voice) {
       sharedStreams.forEach((stream: any) => {
         stream.getAudioTracks().forEach((track: any) => {
           track.enabled = true;
         });
-      })
-      // socket.emit("voice-on", peer!.id);
-    }else{
+      });
+      socket.emit("voice-on", peer.id);
+    } else {
       sharedStreams.forEach((stream: any) => {
         stream.getAudioTracks().forEach((track: any) => {
           track.enabled = false;
         });
-      })
-      // socket.emit("voice-off", peer!.id);
+      });
+      socket.emit("voice-off", peer.id);
     }
-  }, [voice])
+  }, [voice, peer]);
 
   const shareVideo = (userPeerId: string) => {
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
@@ -258,13 +259,15 @@ export const VideoChat = ({
       <section>
         <ul className="flex gap-3 p-4 bg-primary-100">
           {userList.map((userObj: UserObj) => {
-            return <UserVideo
-            key={userObj.userPeerId}
-            userObj={userObj}
-            remoteStreams={remoteStreams}
-            peer={peer}
-            streamMuted={streamMuted}
-          />
+            return (
+              <UserVideo
+                key={userObj.userPeerId}
+                userObj={userObj}
+                remoteStreams={remoteStreams}
+                peer={peer}
+                streamMuted={streamMuted}
+              />
+            );
           })}
         </ul>
       </section>
@@ -275,4 +278,3 @@ export const VideoChat = ({
     </div>
   );
 };
-
