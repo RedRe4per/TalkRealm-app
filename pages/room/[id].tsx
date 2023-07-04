@@ -5,7 +5,7 @@ import {
   colors,
 } from "unique-names-generator";
 import { GetServerSidePropsContext } from "next";
-import { VideoChat } from "@/components/Video/UserMedia";
+import { VideoChat } from "@/components/Video";
 import SideBar from "@/components/SideBar";
 import { useState, useEffect, useMemo } from "react";
 import { io } from "socket.io-client";

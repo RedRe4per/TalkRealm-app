@@ -1,4 +1,3 @@
-/* eslint-disable react/display-name */
 import React, { useEffect, useState } from "react";
 import type { Peer } from "peerjs";
 import { Socket } from "socket.io-client";
