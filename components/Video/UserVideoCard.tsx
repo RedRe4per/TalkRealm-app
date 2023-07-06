@@ -23,6 +23,7 @@ export const UserVideoCard = React.memo(
     const remoteStream = remoteStreams.find(
       (remoteStream) => remoteStream.userPeerId === userObj.userPeerId
     );
+    console.log("video card rerender")
 
     useEffect(() => {
       isRemoteMuted
@@ -30,6 +31,7 @@ export const UserVideoCard = React.memo(
         : RemoteAudioTracksOn(remoteStream);
       const handleRemoteVoiceOn = (peerId: string) => {
         if (peerId === remoteStream?.userPeerId) {
+          console.log("11111111111111111")
           RemoteAudioTracksOn(remoteStream);
           setIsRemoteMuted(false);
         }
@@ -68,7 +70,7 @@ export const UserVideoCard = React.memo(
                 ref.srcObject = remoteStream.stream;
               }
             }}
-            autoPlay
+            autoPlay={!isRoomMuted}
             playsInline
             muted={isRoomMuted}
           />

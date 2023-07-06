@@ -249,6 +249,7 @@ export const VideoChat = ({
   }, [peer, camera]);
 
   const handleVoiceOn = () => {
+    socket.emit('findVoiceOn', peer?.id)
     setIsRoomMuted(!isRoomMuted);
   };
 
