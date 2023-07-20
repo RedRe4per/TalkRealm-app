@@ -14,6 +14,16 @@ interface Props {
   userList: UserObj[];
 }
 
+type ChannelUser = {
+  isActive: boolean;
+  userId: string;
+  userPeerId: string;
+  userName: string;
+  audio: boolean;
+  video: boolean;
+  screen: boolean;
+}
+
 export const VideoChat = ({
   voice,
   setVoice,
@@ -31,6 +41,19 @@ export const VideoChat = ({
   const [outgoingCalls, setOutgoingCalls] = useState<MediaConnection[]>([]);
   const [currentCalls, setCurrentCalls] = useState<MediaConnection[]>([]);
   const [sharedStreams, setSharedStreams] = useState<MediaStream[]>([]);
+
+  const [localUser, setLocalUser] = useState<ChannelUser | null>(null);
+  const [user1, setUser1] = useState<ChannelUser | null>(null);
+  const [user2, setUser2] = useState<ChannelUser | null>(null);
+  const [user3, setUser3] = useState<ChannelUser | null>(null);
+  const [user4, setUser4] = useState<ChannelUser | null>(null);
+  const [user5, setUser5] = useState<ChannelUser | null>(null);
+  const [user6, setUser6] = useState<ChannelUser | null>(null);
+  const [user7, setUser7] = useState<ChannelUser | null>(null);
+  const [user8, setUser8] = useState<ChannelUser | null>(null);
+  const [user9, setUser9] = useState<ChannelUser | null>(null);
+  const [user10, setUser10] = useState<ChannelUser | null>(null);
+  const [user111, setUser11] = useState<ChannelUser | null>(null);
 
   // useEffect(() => {
   //   const startScreenShare = async () => {

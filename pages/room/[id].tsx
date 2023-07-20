@@ -103,6 +103,7 @@ export default function Room(roomInfo: Props) {
         </button> */}
         <VideoChat
           voice={voice}
+          setVoice={setVoice}
           camera={camera}
           shareScreen={shareScreen}
           socket={socketIo}
