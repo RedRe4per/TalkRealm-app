@@ -115,14 +115,14 @@ export const VideoChat = ({
     if (peer && camera) {
       const handler = ({ userObj: userObj }: IUserProps) => {
         shareVideo(userObj.userPeerId);
-        setTimeout(()=>{
-          console.log(1)
+        setTimeout(() => {
+          console.log(1);
           setVoice(false);
-        }, 2000)
-        setTimeout(()=>{
-          console.log(2)
+        }, 2000);
+        setTimeout(() => {
+          console.log(2);
           setVoice(true);
-        }, 2100)
+        }, 2100);
       };
       socket.on("user-connected", handler);
 
@@ -259,7 +259,7 @@ export const VideoChat = ({
   }, [peer, camera]);
 
   const handleVoiceOn = () => {
-    socket.emit('findVoiceOn', peer?.id)
+    socket.emit("findVoiceOn", peer?.id);
     setIsRoomMuted(!isRoomMuted);
   };
 
