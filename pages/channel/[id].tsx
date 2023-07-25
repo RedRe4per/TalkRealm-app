@@ -10,6 +10,7 @@ import {
   adjectives,
   colors,
 } from "unique-names-generator";
+import { ChannelUser } from "@/interfaces/socket";
 
 const customConfig: Config = {
   dictionaries: [adjectives, colors],
@@ -27,6 +28,7 @@ export default function Channel(channelInfo: Props) {
   const [shareScreen, setShareScreen] = useState(false);
   const [peer, setPeer] = useState<Peer | null>(null);
   const [userList, setUserList] = useState<any[]>([]);
+  const [localUser, setLocalUser] = useState<any | null>(null);
   const socketIo = useMemo(
     () => io(`${process.env.NEXT_PUBLIC_SERVER_ADDRESS}`),
     []
@@ -40,15 +42,15 @@ export default function Channel(channelInfo: Props) {
 
     socketIo.on(
       "user-connected",
-      ({ userObj: userObj, users: users }: any) => {
-        setUserList(users);
+      ({ userObj, channelUsers }: any) => {
+        setUserList(channelUsers);
       }
     );
 
     socketIo.on(
       "user-disconnected",
-      ({ userId: userId, users: users }: any) => {
-        setUserList(users);
+      ({ userObj, channelUsers }: any) => {
+        setUserList(channelUsers);
       }
     );
 
@@ -57,13 +59,17 @@ export default function Channel(channelInfo: Props) {
       setPeer(peer);
 
       peer.on("open", (id: string) => {
-        socketIo.emit("I-connected", {
+        myPeerId = id;
+        const localUser = {
           userId: "created by database",
           userPeerId: id,
           userName: uniqueNamesGenerator(customConfig),
-          voice: false,
-        });
-        myPeerId = id;
+          audio: false,
+          video: false,
+          screen: false,
+        }
+        setLocalUser(localUser);
+        socketIo.emit("I-connected", localUser);
       });
     });
 
@@ -96,6 +102,7 @@ export default function Channel(channelInfo: Props) {
           socket={socketIo}
           peer={peer}
           userList={userList}
+          localUser={localUser}
         />
       </section>
     </main>

@@ -3,6 +3,7 @@ import { Socket } from "socket.io-client";
 import type { Peer, MediaConnection } from "peerjs";
 import { UserObj, IUserProps, StreamObject } from "@/interfaces/socket";
 import { UserVideoCard } from "./UserVideoCard";
+import useUpdateUsers from "@/hooks/useUpdateUsers";
 
 interface Props {
   voice: boolean;
@@ -12,17 +13,8 @@ interface Props {
   socket: Socket;
   peer: Peer | null;
   userList: UserObj[];
+  localUser: any;
 }
-
-type ChannelUser = {
-  isActive: boolean;
-  userId: string;
-  userPeerId: string;
-  userName: string;
-  audio: boolean;
-  video: boolean;
-  screen: boolean;
-};
 
 export const VideoChat = ({
   voice,
@@ -32,7 +24,34 @@ export const VideoChat = ({
   socket,
   peer,
   userList,
+  localUser,
 }: Props) => {
+  const [user1, setUser1] = useState<any | null>(null);
+  const [user2, setUser2] = useState<any | null>(null);
+  const [user3, setUser3] = useState<any | null>(null);
+  const [user4, setUser4] = useState<any | null>(null);
+  const [user5, setUser5] = useState<any | null>(null);
+  const [user6, setUser6] = useState<any | null>(null);
+  const [user7, setUser7] = useState<any | null>(null);
+  const [user8, setUser8] = useState<any | null>(null);
+  const [user9, setUser9] = useState<any | null>(null);
+  const [user10, setUser10] = useState<any | null>(null);
+  const [user11, setUser11] = useState<any | null>(null);
+
+  const setUserFuncs = useRef([
+    setUser1, 
+    setUser2, 
+    setUser3, 
+    setUser4, 
+    setUser5, 
+    setUser6, 
+    setUser7, 
+    setUser8, 
+    setUser9, 
+    setUser10, 
+    setUser11
+  ]);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const screenRef = useRef<HTMLVideoElement>(null);
   const [isRoomMuted, setIsRoomMuted] = useState(true);
@@ -42,52 +61,7 @@ export const VideoChat = ({
   const [currentCalls, setCurrentCalls] = useState<MediaConnection[]>([]);
   const [sharedStreams, setSharedStreams] = useState<MediaStream[]>([]);
 
-  const [localUser, setLocalUser] = useState<ChannelUser | null>(null);
-  const [user1, setUser1] = useState<ChannelUser | null>(null);
-  const [user2, setUser2] = useState<ChannelUser | null>(null);
-  const [user3, setUser3] = useState<ChannelUser | null>(null);
-  const [user4, setUser4] = useState<ChannelUser | null>(null);
-  const [user5, setUser5] = useState<ChannelUser | null>(null);
-  const [user6, setUser6] = useState<ChannelUser | null>(null);
-  const [user7, setUser7] = useState<ChannelUser | null>(null);
-  const [user8, setUser8] = useState<ChannelUser | null>(null);
-  const [user9, setUser9] = useState<ChannelUser | null>(null);
-  const [user10, setUser10] = useState<ChannelUser | null>(null);
-  const [user111, setUser11] = useState<ChannelUser | null>(null);
-
-  // useEffect(() => {
-  //   const startScreenShare = async () => {
-  //     if (
-  //       "mediaDevices" in navigator &&
-  //       "getDisplayMedia" in navigator.mediaDevices
-  //     ) {
-  //       try {
-  //         const screenStream = await navigator.mediaDevices.getDisplayMedia({
-  //           video: true,
-  //         });
-  //         if (screenRef.current) {
-  //           screenRef.current.srcObject = screenStream;
-  //         }
-  //       } catch (err) {
-  //         console.error("Error: " + err);
-  //       }
-  //     }
-  //   };
-
-  //   const stopScreenShare = () => {
-  //     if (screenRef.current && screenRef.current.srcObject) {
-  //       let tracks = (screenRef.current.srcObject as MediaStream).getTracks();
-  //       tracks.forEach((track) => track.stop());
-  //       screenRef.current.srcObject = null;
-  //     }
-  //   };
-
-  //   if (shareScreen) {
-  //     startScreenShare();
-  //   } else {
-  //     stopScreenShare();
-  //   }
-  // }, [shareScreen]);
+  useUpdateUsers(userList, localUser, [user1, user2, user3, user4, user5, user6, user7, user8, user9, user10, user11], setUserFuncs);
 
   useEffect(() => {
     if (!peer) return;
@@ -281,10 +255,9 @@ export const VideoChat = ({
     };
   }, [peer, camera]);
 
-  const handleVoiceOn = () => {
-    socket.emit("findVoiceOn", peer?.id);
-    setIsRoomMuted(!isRoomMuted);
-  };
+  const handleCheck = () => {
+    console.log(userList, localUser, user1, user2, user3, user4, user5, user6, user7, user8, user9, user10, user11)
+  }
 
   return (
     <div>
@@ -304,7 +277,7 @@ export const VideoChat = ({
           })}
         </ul>
       </section>
-      <button className="text-quaternary-400" onClick={handleVoiceOn}>
+      <button className="text-quaternary-400" onClick={handleCheck}>
         Voice on
       </button>
       <video className="w-[40vw]" ref={screenRef} autoPlay playsInline />
