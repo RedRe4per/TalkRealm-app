@@ -39,19 +39,38 @@ export const VideoChat = ({
   const [user11, setUser11] = useState<any | null>(null);
 
   const setUserFuncs = useRef([
-    setUser1, 
-    setUser2, 
-    setUser3, 
-    setUser4, 
-    setUser5, 
-    setUser6, 
-    setUser7, 
-    setUser8, 
-    setUser9, 
-    setUser10, 
-    setUser11
+    setUser1,
+    setUser2,
+    setUser3,
+    setUser4,
+    setUser5,
+    setUser6,
+    setUser7,
+    setUser8,
+    setUser9,
+    setUser10,
+    setUser11,
   ]);
-  
+
+  useUpdateUsers(
+    userList,
+    localUser,
+    [
+      user1,
+      user2,
+      user3,
+      user4,
+      user5,
+      user6,
+      user7,
+      user8,
+      user9,
+      user10,
+      user11,
+    ],
+    setUserFuncs
+  );
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const screenRef = useRef<HTMLVideoElement>(null);
   const [isRoomMuted, setIsRoomMuted] = useState(true);
@@ -61,9 +80,7 @@ export const VideoChat = ({
   const [currentCalls, setCurrentCalls] = useState<MediaConnection[]>([]);
   const [sharedStreams, setSharedStreams] = useState<MediaStream[]>([]);
 
-  useUpdateUsers(userList, localUser, [user1, user2, user3, user4, user5, user6, user7, user8, user9, user10, user11], setUserFuncs);
-
-  useEffect(() => {
+  useEffect(() => { //开声音时，无声视频变有声。
     if (!peer) return;
     if (voice) {
       sharedStreams.forEach((stream: any) => {
@@ -82,7 +99,7 @@ export const VideoChat = ({
     }
   }, [voice, peer]);
 
-  const shareVideo = (userPeerId: string) => {
+  const shareVideo = (remotePeerId: string) => {
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
       const config = { video: true, audio: true };
       navigator.mediaDevices
@@ -91,7 +108,7 @@ export const VideoChat = ({
           stream.getAudioTracks().forEach((track) => {
             track.enabled = false;
           });
-          const call = peer!.call(userPeerId, stream);
+          const call = peer!.call(remotePeerId, stream);
           setOutgoingCalls((prevCalls) => [...prevCalls, call]);
           setSharedStreams((prev) => [...prev, stream]);
 
@@ -108,7 +125,7 @@ export const VideoChat = ({
     }
   };
 
-  useEffect(() => {
+  useEffect(() => { //开摄像头
     if (peer && camera) {
       const handler = ({ userObj: userObj }: IUserProps) => {
         shareVideo(userObj.userPeerId);
@@ -256,31 +273,153 @@ export const VideoChat = ({
   }, [peer, camera]);
 
   const handleCheck = () => {
-    console.log(userList, localUser, user1, user2, user3, user4, user5, user6, user7, user8, user9, user10, user11)
-  }
+    console.log(
+      userList,
+      localUser,
+      user1,
+      user2,
+      user3,
+      user4,
+      user5,
+      user6,
+      user7,
+      user8,
+      user9,
+      user10,
+      user11
+    );
+  };
 
   return (
-    <div>
+    <section>
       <section>
         <ul className="flex gap-3 p-4 bg-primary-100">
-          {userList.map((userObj: UserObj) => {
-            return (
-              <UserVideoCard
-                key={userObj.userPeerId}
-                userObj={userObj}
-                remoteStreams={remoteStreams}
-                peer={peer}
-                socket={socket}
-                isRoomMuted={isRoomMuted}
-              />
-            );
-          })}
+          {localUser && (
+            <UserVideoCard
+              key={localUser.userPeerId}
+              userObj={localUser}
+              remoteStreams={remoteStreams}
+              peer={peer}
+              socket={socket}
+              isRoomMuted={isRoomMuted}
+            />
+          )}
+          {user1 && (
+            <UserVideoCard
+              key={user1.userPeerId}
+              userObj={user1}
+              remoteStreams={remoteStreams}
+              peer={peer}
+              socket={socket}
+              isRoomMuted={isRoomMuted}
+            />
+          )}
+          {user2 && (
+            <UserVideoCard
+              key={user2.userPeerId}
+              userObj={user2}
+              remoteStreams={remoteStreams}
+              peer={peer}
+              socket={socket}
+              isRoomMuted={isRoomMuted}
+            />
+          )}
+          {user3 && (
+            <UserVideoCard
+              key={user3.userPeerId}
+              userObj={user3}
+              remoteStreams={remoteStreams}
+              peer={peer}
+              socket={socket}
+              isRoomMuted={isRoomMuted}
+            />
+          )}
+          {user4 && (
+            <UserVideoCard
+              key={user4.userPeerId}
+              userObj={user4}
+              remoteStreams={remoteStreams}
+              peer={peer}
+              socket={socket}
+              isRoomMuted={isRoomMuted}
+            />
+          )}
+          {user5 && (
+            <UserVideoCard
+              key={user5.userPeerId}
+              userObj={user5}
+              remoteStreams={remoteStreams}
+              peer={peer}
+              socket={socket}
+              isRoomMuted={isRoomMuted}
+            />
+          )}
+          {user6 && (
+            <UserVideoCard
+              key={user6.userPeerId}
+              userObj={user6}
+              remoteStreams={remoteStreams}
+              peer={peer}
+              socket={socket}
+              isRoomMuted={isRoomMuted}
+            />
+          )}
+          {user7 && (
+            <UserVideoCard
+              key={user7.userPeerId}
+              userObj={user7}
+              remoteStreams={remoteStreams}
+              peer={peer}
+              socket={socket}
+              isRoomMuted={isRoomMuted}
+            />
+          )}
+          {user8 && (
+            <UserVideoCard
+              key={user8.userPeerId}
+              userObj={user8}
+              remoteStreams={remoteStreams}
+              peer={peer}
+              socket={socket}
+              isRoomMuted={isRoomMuted}
+            />
+          )}
+          {user9 && (
+            <UserVideoCard
+              key={user9.userPeerId}
+              userObj={user9}
+              remoteStreams={remoteStreams}
+              peer={peer}
+              socket={socket}
+              isRoomMuted={isRoomMuted}
+            />
+          )}
+          {user10 && (
+            <UserVideoCard
+              key={user10.userPeerId}
+              userObj={user10}
+              remoteStreams={remoteStreams}
+              peer={peer}
+              socket={socket}
+              isRoomMuted={isRoomMuted}
+            />
+          )}
+          {user11 && (
+            <UserVideoCard
+              key={user11.userPeerId}
+              userObj={user11}
+              remoteStreams={remoteStreams}
+              peer={peer}
+              socket={socket}
+              isRoomMuted={isRoomMuted}
+            />
+          )}
         </ul>
       </section>
       <button className="text-quaternary-400" onClick={handleCheck}>
         Voice on
       </button>
       <video className="w-[40vw]" ref={screenRef} autoPlay playsInline />
-    </div>
+    </section>
   );
 };

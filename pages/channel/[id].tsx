@@ -40,19 +40,13 @@ export default function Channel(channelInfo: Props) {
       console.log(message);
     });
 
-    socketIo.on(
-      "user-connected",
-      ({ userObj, channelUsers }: any) => {
-        setUserList(channelUsers);
-      }
-    );
+    socketIo.on("user-connected", ({ userObj, channelUsers }: any) => {
+      setUserList(channelUsers);
+    });
 
-    socketIo.on(
-      "user-disconnected",
-      ({ userObj, channelUsers }: any) => {
-        setUserList(channelUsers);
-      }
-    );
+    socketIo.on("user-disconnected", ({ userObj, channelUsers }: any) => {
+      setUserList(channelUsers);
+    });
 
     import("peerjs").then(({ default: Peer }) => {
       const peer = new Peer();
@@ -67,7 +61,7 @@ export default function Channel(channelInfo: Props) {
           audio: false,
           video: false,
           screen: false,
-        }
+        };
         setLocalUser(localUser);
         socketIo.emit("I-connected", localUser);
       });
