@@ -32,41 +32,8 @@ export const VideoChat = ({
   const [currentCalls, setCurrentCalls] = useState<MediaConnection[]>([]);
   const [sharedStreams, setSharedStreams] = useState<MediaStream[]>([]);
 
-  // useEffect(() => {
-  //   const startScreenShare = async () => {
-  //     if (
-  //       "mediaDevices" in navigator &&
-  //       "getDisplayMedia" in navigator.mediaDevices
-  //     ) {
-  //       try {
-  //         const screenStream = await navigator.mediaDevices.getDisplayMedia({
-  //           video: true,
-  //         });
-  //         if (screenRef.current) {
-  //           screenRef.current.srcObject = screenStream;
-  //         }
-  //       } catch (err) {
-  //         console.error("Error: " + err);
-  //       }
-  //     }
-  //   };
-
-  //   const stopScreenShare = () => {
-  //     if (screenRef.current && screenRef.current.srcObject) {
-  //       let tracks = (screenRef.current.srcObject as MediaStream).getTracks();
-  //       tracks.forEach((track) => track.stop());
-  //       screenRef.current.srcObject = null;
-  //     }
-  //   };
-
-  //   if (shareScreen) {
-  //     startScreenShare();
-  //   } else {
-  //     stopScreenShare();
-  //   }
-  // }, [shareScreen]);
-
   useEffect(() => {
+    //开声音时，无声视频变有声。
     if (!peer) return;
     if (voice) {
       sharedStreams.forEach((stream: any) => {
@@ -95,8 +62,8 @@ export const VideoChat = ({
             track.enabled = false;
           });
           const call = peer!.call(userPeerId, stream);
-          setOutgoingCalls((prevCalls) => [...prevCalls, call]);
-          setSharedStreams((prev) => [...prev, stream]);
+          setOutgoingCalls((prevCalls) => [...prevCalls, call]); //改成分布式，附属在user1里面
+          setSharedStreams((prev) => [...prev, stream]); //改成分布式，附属在user1里面
 
           call.on("close", () => {
             setOutgoingCalls((prevCalls) =>
@@ -112,6 +79,7 @@ export const VideoChat = ({
   };
 
   useEffect(() => {
+    //开摄像头后，当有新用户登入时，share video给它。
     if (peer && camera) {
       const handler = ({ userObj: userObj }: IUserProps) => {
         shareVideo(userObj.userPeerId);
@@ -133,6 +101,7 @@ export const VideoChat = ({
   }, [peer, camera]);
 
   useEffect(() => {
+    //补偿peerJS的bug
     const handleRemoteCameraClose = (outgoingIds: string[]) => {
       const newCalls = currentCalls.filter((call: MediaConnection) => {
         if (outgoingIds.includes(call.connectionId)) {

@@ -80,25 +80,6 @@ export const VideoChat = ({
   const [currentCalls, setCurrentCalls] = useState<MediaConnection[]>([]);
   const [sharedStreams, setSharedStreams] = useState<MediaStream[]>([]);
 
-  useEffect(() => { //开声音时，无声视频变有声。
-    if (!peer) return;
-    if (voice) {
-      sharedStreams.forEach((stream: any) => {
-        stream.getAudioTracks().forEach((track: any) => {
-          track.enabled = true;
-        });
-      });
-      socket.emit("voice-on", peer.id);
-    } else {
-      sharedStreams.forEach((stream: any) => {
-        stream.getAudioTracks().forEach((track: any) => {
-          track.enabled = false;
-        });
-      });
-      socket.emit("voice-off", peer.id);
-    }
-  }, [voice, peer]);
-
   const shareVideo = (remotePeerId: string) => {
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
       const config = { video: true, audio: true };
@@ -109,15 +90,24 @@ export const VideoChat = ({
             track.enabled = false;
           });
           const call = peer!.call(remotePeerId, stream);
-          setOutgoingCalls((prevCalls) => [...prevCalls, call]);
-          setSharedStreams((prev) => [...prev, stream]);
-
-          call.on("close", () => {
-            setOutgoingCalls((prevCalls) =>
-              prevCalls.filter((item) => item !== call)
-            );
-            videoRef.current?.remove();
-          });
+          const remoteUserList = [
+            user1,
+            user2,
+            user3,
+            user4,
+            user5,
+            user6,
+            user7,
+            user8,
+            user9,
+            user10,
+            user11,
+          ];
+          const userIndex = remoteUserList.findIndex(
+            (user: any) => user.userPeerId === remotePeerId
+          );
+          remoteUserList[userIndex].outgoingCall = call;
+          remoteUserList[userIndex].sharedStream = stream;
         })
         .catch((err) => {
           console.error("Error accessing media devices.", err);
@@ -125,9 +115,10 @@ export const VideoChat = ({
     }
   };
 
-  useEffect(() => { //开摄像头
+  useEffect(() => {
+    //开摄像头后，当有新用户登入时，share video给它。后续声音也用这个
     if (peer && camera) {
-      const handler = ({ userObj: userObj }: IUserProps) => {
+      const handler = ({ userObj }: IUserProps) => {
         shareVideo(userObj.userPeerId);
         setTimeout(() => {
           console.log(1);
@@ -144,9 +135,157 @@ export const VideoChat = ({
         socket.off("user-connected", handler);
       };
     }
-  }, [peer, camera]);
+  }, [
+    peer,
+    camera,
+    localUser,
+    user1,
+    user2,
+    user3,
+    user4,
+    user5,
+    user6,
+    user7,
+    user8,
+    user9,
+    user10,
+    user11,
+  ]);
 
   useEffect(() => {
+    const remoteUserList = [
+      user1,
+      user2,
+      user3,
+      user4,
+      user5,
+      user6,
+      user7,
+      user8,
+      user9,
+      user10,
+      user11,
+    ];
+    //开摄像头时，打开本地preview。重新建立peer.call
+    if (
+      "mediaDevices" in navigator &&
+      navigator.mediaDevices.getUserMedia &&
+      camera
+    ) {
+      const config = { video: camera, audio: false };
+      navigator.mediaDevices
+        .getUserMedia(config)
+        .then((stream) => {
+          localUser.localStream = stream;
+          remoteUserList.forEach((userObj: UserObj) => {
+            shareVideo(userObj.userPeerId);
+          });
+        })
+        .catch((err) => {
+          console.error("Error accessing media devices.", err);
+        });
+    } else {
+      //Compensation for PeerJS bugs
+      const outgoingIds: string[] = remoteUserList.map((remoteUser: any) => {
+        if (remoteUser && remoteUser.outgoingCall) {
+          return remoteUser.outgoingCall.connectionId;
+        }
+      });
+      socket.emit("camera-close-bugfix", outgoingIds);
+      remoteUserList.forEach((remoteUser: any) => {
+        if (remoteUser && remoteUser.outgoingCall) {
+          remoteUser.outgoingCall.close();
+          remoteUser.outgoingCall = null;
+          if (remoteUser.sharedStream) {
+            remoteUser.sharedStreams.forEach((stream: MediaStream) => {
+              stream
+                .getTracks()
+                .forEach((track: MediaStreamTrack) => track.stop());
+            });
+          }
+        }
+      });
+      if (localUser && localUser.localStream) {
+        localUser.localStream
+          .getTracks()
+          .forEach((track: MediaStreamTrack) => track.stop());
+      }
+    }
+  }, [
+    camera,
+    localUser,
+    user1,
+    user2,
+    user3,
+    user4,
+    user5,
+    user6,
+    user7,
+    user8,
+    user9,
+    user10,
+    user11,
+  ]);
+
+  useEffect(() => {
+    //接收远程peer时处理
+    if (peer) {
+      peer.on("call", (call: MediaConnection) => {
+        setCurrentCalls((prevCalls) => [...prevCalls, call]);
+        if (!camera) {
+          const emptyStream = new MediaStream();
+          call.answer(emptyStream);
+        } else {
+          call.answer(localUser.localStream || undefined);
+        }
+        call.on("stream", function (remoteStream: MediaStream) {
+          const remoteUserList = [
+            user1,
+            user2,
+            user3,
+            user4,
+            user5,
+            user6,
+            user7,
+            user8,
+            user9,
+            user10,
+            user11,
+          ];
+          const index = remoteUserList.findIndex(
+            (remoteUser: any) => remoteUser?.userPeerId === call.peer
+          );
+          if (index > -1) {
+            remoteUserList[index].remoteStream = remoteStream;
+          }
+        });
+      });
+    }
+
+    return () => {
+      if (peer) {
+        peer.off("call");
+      }
+    };
+  }, [
+    peer,
+    camera,
+    localUser,
+    user1,
+    user2,
+    user3,
+    user4,
+    user5,
+    user6,
+    user7,
+    user8,
+    user9,
+    user10,
+    user11,
+  ]);
+
+  useEffect(() => {
+    //补偿peerJS的bug
     const handleRemoteCameraClose = (outgoingIds: string[]) => {
       const newCalls = currentCalls.filter((call: MediaConnection) => {
         if (outgoingIds.includes(call.connectionId)) {
@@ -163,114 +302,11 @@ export const VideoChat = ({
       });
       setCurrentCalls(newCalls);
     };
-    socket.on("remote-camera-close", handleRemoteCameraClose);
+    socket.on("remote-camera-close-bugfix", handleRemoteCameraClose);
     return () => {
-      socket.off("remote-camera-close", handleRemoteCameraClose);
+      socket.off("remote-camera-close-bugfix", handleRemoteCameraClose);
     };
   }, [socket, currentCalls]);
-
-  useEffect(() => {
-    //开摄像头时，打开本地preview。重新建立peer.call
-    if (
-      "mediaDevices" in navigator &&
-      navigator.mediaDevices.getUserMedia &&
-      camera
-    ) {
-      const config = { video: camera, audio: false };
-      navigator.mediaDevices
-        .getUserMedia(config)
-        .then((stream) => {
-          const myStream = {
-            userPeerId: peer!.id,
-            stream: stream,
-          };
-          setLocalStream(stream);
-          setRemoteStreams((prevStreams: StreamObject[]) => [
-            ...prevStreams,
-            myStream,
-          ]);
-
-          userList
-            .filter((userObj: UserObj) => userObj.userPeerId !== peer!.id)
-            .forEach((userObj: UserObj) => {
-              shareVideo(userObj.userPeerId);
-            });
-        })
-        .catch((err) => {
-          console.error("Error accessing media devices.", err);
-        });
-    } else {
-      const outgoingIds: string[] = outgoingCalls.map(
-        (outgoingCall: MediaConnection) => {
-          return outgoingCall.connectionId;
-        }
-      );
-      socket.emit("camera-close", outgoingIds);
-      outgoingCalls.forEach((call) => {
-        call.close();
-      });
-      setOutgoingCalls([]);
-      setRemoteStreams((prev: StreamObject[]) =>
-        prev.filter((item: StreamObject) => item.userPeerId !== peer!.id)
-      );
-      if (localStream) {
-        localStream
-          .getTracks()
-          .forEach((track: MediaStreamTrack) => track.stop());
-        sharedStreams.forEach((stream: MediaStream) => {
-          stream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
-        });
-      }
-    }
-  }, [camera]);
-
-  useEffect(() => {
-    //接收远程peer时处理
-    if (peer) {
-      peer.on("call", (call: MediaConnection) => {
-        setCurrentCalls((prevCalls) => [...prevCalls, call]);
-        if (!camera) {
-          const emptyStream = new MediaStream();
-          call.answer(emptyStream);
-        } else {
-          call.answer(localStream || undefined);
-        }
-        call.on("stream", function (remoteStream: MediaStream) {
-          const newStream = {
-            userPeerId: call.peer,
-            stream: remoteStream,
-          };
-          setRemoteStreams((prevStreams: StreamObject[]) => {
-            const isStreamExist = prevStreams.some(
-              (prevStream) =>
-                prevStream.userPeerId === newStream.userPeerId &&
-                prevStream.stream.id === newStream.stream.id
-            );
-
-            if (!isStreamExist) {
-              return [...prevStreams, newStream];
-            } else {
-              return prevStreams;
-            }
-          });
-        });
-
-        call.on("close", function () {
-          setRemoteStreams((prevStreams: StreamObject[]) =>
-            prevStreams.filter(
-              (stream: StreamObject) => stream.userPeerId !== call.peer
-            )
-          );
-        });
-      });
-    }
-
-    return () => {
-      if (peer) {
-        peer.off("call");
-      }
-    };
-  }, [peer, camera]);
 
   const handleCheck = () => {
     console.log(
@@ -298,8 +334,7 @@ export const VideoChat = ({
             <UserVideoCard
               key={localUser.userPeerId}
               userObj={localUser}
-              remoteStreams={remoteStreams}
-              peer={peer}
+              stream={localUser.localStream}
               socket={socket}
               isRoomMuted={isRoomMuted}
             />
@@ -308,8 +343,7 @@ export const VideoChat = ({
             <UserVideoCard
               key={user1.userPeerId}
               userObj={user1}
-              remoteStreams={remoteStreams}
-              peer={peer}
+              stream={user1.remoteStream}
               socket={socket}
               isRoomMuted={isRoomMuted}
             />
@@ -318,8 +352,7 @@ export const VideoChat = ({
             <UserVideoCard
               key={user2.userPeerId}
               userObj={user2}
-              remoteStreams={remoteStreams}
-              peer={peer}
+              stream={user2.remoteStream}
               socket={socket}
               isRoomMuted={isRoomMuted}
             />
@@ -328,8 +361,7 @@ export const VideoChat = ({
             <UserVideoCard
               key={user3.userPeerId}
               userObj={user3}
-              remoteStreams={remoteStreams}
-              peer={peer}
+              stream={user3.remoteStream}
               socket={socket}
               isRoomMuted={isRoomMuted}
             />
@@ -338,8 +370,7 @@ export const VideoChat = ({
             <UserVideoCard
               key={user4.userPeerId}
               userObj={user4}
-              remoteStreams={remoteStreams}
-              peer={peer}
+              stream={user4.remoteStream}
               socket={socket}
               isRoomMuted={isRoomMuted}
             />
@@ -348,8 +379,7 @@ export const VideoChat = ({
             <UserVideoCard
               key={user5.userPeerId}
               userObj={user5}
-              remoteStreams={remoteStreams}
-              peer={peer}
+              stream={user5.remoteStream}
               socket={socket}
               isRoomMuted={isRoomMuted}
             />
@@ -358,8 +388,7 @@ export const VideoChat = ({
             <UserVideoCard
               key={user6.userPeerId}
               userObj={user6}
-              remoteStreams={remoteStreams}
-              peer={peer}
+              stream={user6.remoteStream}
               socket={socket}
               isRoomMuted={isRoomMuted}
             />
@@ -368,8 +397,7 @@ export const VideoChat = ({
             <UserVideoCard
               key={user7.userPeerId}
               userObj={user7}
-              remoteStreams={remoteStreams}
-              peer={peer}
+              stream={user7.remoteStream}
               socket={socket}
               isRoomMuted={isRoomMuted}
             />
@@ -378,8 +406,7 @@ export const VideoChat = ({
             <UserVideoCard
               key={user8.userPeerId}
               userObj={user8}
-              remoteStreams={remoteStreams}
-              peer={peer}
+              stream={user8.remoteStream}
               socket={socket}
               isRoomMuted={isRoomMuted}
             />
@@ -388,8 +415,7 @@ export const VideoChat = ({
             <UserVideoCard
               key={user9.userPeerId}
               userObj={user9}
-              remoteStreams={remoteStreams}
-              peer={peer}
+              stream={user9.remoteStream}
               socket={socket}
               isRoomMuted={isRoomMuted}
             />
@@ -398,8 +424,7 @@ export const VideoChat = ({
             <UserVideoCard
               key={user10.userPeerId}
               userObj={user10}
-              remoteStreams={remoteStreams}
-              peer={peer}
+              stream={user10.remoteStream}
               socket={socket}
               isRoomMuted={isRoomMuted}
             />
@@ -408,8 +433,7 @@ export const VideoChat = ({
             <UserVideoCard
               key={user11.userPeerId}
               userObj={user11}
-              remoteStreams={remoteStreams}
-              peer={peer}
+              stream={user11.remoteStream}
               socket={socket}
               isRoomMuted={isRoomMuted}
             />
