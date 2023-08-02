@@ -3,6 +3,7 @@ import { Socket } from "socket.io-client";
 import type { Peer, MediaConnection } from "peerjs";
 import { UserObj, IUserProps, StreamObject } from "@/interfaces/socket";
 import { UserVideoCard } from "./UserVideoCard";
+import { useUpdateEffect } from 'usehooks-ts'
 import useUpdateUsers from "@/hooks/useUpdateUsers";
 
 interface Props {
@@ -88,8 +89,6 @@ export const VideoChat = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const screenRef = useRef<HTMLVideoElement>(null);
   const [isRoomMuted, setIsRoomMuted] = useState(true);
-  const [remoteStreams, setRemoteStreams] = useState<StreamObject[]>([]);
-  const [currentCalls, setCurrentCalls] = useState<MediaConnection[]>([]);
   const [localStream, setLocalStream] = useState<any>(null)
 
   const shareVideo = (remotePeerId: string) => {
@@ -142,6 +141,7 @@ export const VideoChat = ({
   ]);
 
   useEffect(() => {
+    if (!peer) return;
     //开摄像头时，打开本地preview。重新建立peer.call
     if (
       "mediaDevices" in navigator &&
@@ -159,43 +159,36 @@ export const VideoChat = ({
           })
           setLocalStream(stream);
           remoteUserList.forEach((userObj: UserObj) => {
-            if(userObj) shareVideo(userObj.userPeerId);
+            if (userObj) shareVideo(userObj.userPeerId);
           });
         })
         .catch((err) => {
           console.error("Error accessing media devices.", err);
         });
-    } else {
-      //Compensation for PeerJS bugs
-      const outgoingIds: string[] = remoteUserList.map((remoteUser: any) => {
-        if (remoteUser && remoteUser.outgoingCall) {
-          return remoteUser.outgoingCall.connectionId;
-        }
-      });
-      socket.emit("camera-close-bugfix", outgoingIds);
-      remoteUserList.forEach((remoteUser: any) => {
-        if (remoteUser && remoteUser.outgoingCall) {
-          remoteUser.outgoingCall.close();
-          remoteUser.outgoingCall = null;
-          if (remoteUser.sharedStream) {
-            remoteUser.sharedStreams.forEach((stream: MediaStream) => {
-              stream
-                .getTracks()
-                .forEach((track: MediaStreamTrack) => track.stop());
-            });
-          }
-        }
-      });
-      if (localUser && localUser.localStream) {
-        localUser.localStream
-          .getTracks()
-          .forEach((track: MediaStreamTrack) => track.stop());
-      }
     }
   }, [
+    peer,
     camera,
     localUser,
   ]);
+
+  useUpdateEffect(() => {
+    if (camera || !peer) return;
+    if (localStream) localStream
+      .getTracks()
+      .forEach((track: MediaStreamTrack) => track.stop());
+      setLocalStream(null)
+    //Compensation for PeerJS bugs
+    socket.emit("camera-close-bugfix", peer.id);
+    setLocalStream(null);
+    remoteUserList.filter((remoteUser) => remoteUser).forEach((remoteUser: any) => {
+        if(remoteUser.outgoingCall) remoteUser.outgoingCall.close()
+        //remoteUser.outgoingCall = null;
+        if(remoteUser.sharedStream) remoteUser.sharedStream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
+        //remoteUser.sharedStream = null;
+    });
+
+  }, [camera])
 
   useEffect(() => {
     //接收远程peer时处理
@@ -214,8 +207,6 @@ export const VideoChat = ({
     ]
     if (peer) {
       peer.on("call", (call: MediaConnection) => {
-        console.log("get call")
-        setCurrentCalls((prevCalls) => [...prevCalls, call]);
         if (!camera) {
           const emptyStream = new MediaStream();
           call.answer(emptyStream);
@@ -230,7 +221,7 @@ export const VideoChat = ({
           console.log(index, "index")
           if (index > -1) {
             //remoteUserList[index].remoteStream = remoteStream;
-            setUserFuncs.current[index]((prev: any) => Object.assign({remoteStream}, prev));
+            setUserFuncs.current[index]((prev: any) => Object.assign({ remoteStream }, prev));
             console.log(remoteUserList, "remoteUserList2")
           }
         });
@@ -247,6 +238,21 @@ export const VideoChat = ({
     camera,
     localUser,
     user1,
+    user2,
+    user3,
+    user4,
+    user5,
+    user6,
+    user7,
+    user8,
+    user9,
+    user10,
+    user11
+  ]);
+
+  useEffect(() => {
+    const remoteUserList = [
+      user1,
       user2,
       user3,
       user4,
@@ -257,36 +263,36 @@ export const VideoChat = ({
       user9,
       user10,
       user11
-  ]);
-
-  useEffect(() => {
+    ]
     //补偿peerJS的bug
-    const handleRemoteCameraClose = (outgoingIds: string[]) => {
-      const newCalls = currentCalls.filter((call: MediaConnection) => {
-        if (outgoingIds.includes(call.connectionId)) {
-          setRemoteStreams((prevStreams: StreamObject[]) =>
-            prevStreams.filter(
-              (stream: StreamObject) => stream.userPeerId !== call.peer
-            )
-          );
-          call.close();
-          return false;
-        } else {
-          return true;
-        }
+    const handleRemoteCameraClose = (peerId: string[]) => {
+      const userIndex = remoteUserList.findIndex(
+        (user: any) => user?.userPeerId === peerId
+      );
+      setUserFuncs.current[userIndex]((prev: any) => {
+        Object.assign({ remoteStream: null }, prev)
       });
-      setCurrentCalls(newCalls);
     };
     socket.on("remote-camera-close-bugfix", handleRemoteCameraClose);
     return () => {
       socket.off("remote-camera-close-bugfix", handleRemoteCameraClose);
     };
-  }, [socket, currentCalls]);
+  }, [socket, user1,
+    user2,
+    user3,
+    user4,
+    user5,
+    user6,
+    user7,
+    user8,
+    user9,
+    user10,
+    user11]);
 
   const handleCheck = () => {
+    console.log(userList, "list")
     console.log(
-      userList,
-      localUser,
+      localStream ? localStream.getTracks() : "no"
     );
   };
 
