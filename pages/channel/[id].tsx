@@ -41,6 +41,7 @@ export default function Channel(channelInfo: Props) {
     });
 
     socketIo.on("user-connected", ({ userObj, channelUsers }: any) => {
+      console.log(channelUsers)
       setUserList(channelUsers);
     });
 
@@ -97,6 +98,7 @@ export default function Channel(channelInfo: Props) {
           peer={peer}
           userList={userList}
           localUser={localUser}
+          setLocalUser={setLocalUser}
         />
       </section>
     </main>

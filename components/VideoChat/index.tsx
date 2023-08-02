@@ -14,6 +14,7 @@ interface Props {
   peer: Peer | null;
   userList: UserObj[];
   localUser: any;
+  setLocalUser: any;
 }
 
 export const VideoChat = ({
@@ -25,6 +26,7 @@ export const VideoChat = ({
   peer,
   userList,
   localUser,
+  setLocalUser,
 }: Props) => {
   const [user1, setUser1] = useState<any | null>(null);
   const [user2, setUser2] = useState<any | null>(null);
@@ -37,7 +39,19 @@ export const VideoChat = ({
   const [user9, setUser9] = useState<any | null>(null);
   const [user10, setUser10] = useState<any | null>(null);
   const [user11, setUser11] = useState<any | null>(null);
-
+  const remoteUserList = [
+    user1,
+    user2,
+    user3,
+    user4,
+    user5,
+    user6,
+    user7,
+    user8,
+    user9,
+    user10,
+    user11,
+  ];
   const setUserFuncs = useRef([
     setUser1,
     setUser2,
@@ -74,13 +88,12 @@ export const VideoChat = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const screenRef = useRef<HTMLVideoElement>(null);
   const [isRoomMuted, setIsRoomMuted] = useState(true);
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStreams, setRemoteStreams] = useState<StreamObject[]>([]);
-  const [outgoingCalls, setOutgoingCalls] = useState<MediaConnection[]>([]);
   const [currentCalls, setCurrentCalls] = useState<MediaConnection[]>([]);
-  const [sharedStreams, setSharedStreams] = useState<MediaStream[]>([]);
+  const [localStream, setLocalStream] = useState<any>(null)
 
   const shareVideo = (remotePeerId: string) => {
+    console.log("share video")
     if ("mediaDevices" in navigator && navigator.mediaDevices.getUserMedia) {
       const config = { video: true, audio: true };
       navigator.mediaDevices
@@ -90,19 +103,6 @@ export const VideoChat = ({
             track.enabled = false;
           });
           const call = peer!.call(remotePeerId, stream);
-          const remoteUserList = [
-            user1,
-            user2,
-            user3,
-            user4,
-            user5,
-            user6,
-            user7,
-            user8,
-            user9,
-            user10,
-            user11,
-          ];
           const userIndex = remoteUserList.findIndex(
             (user: any) => user.userPeerId === remotePeerId
           );
@@ -139,33 +139,9 @@ export const VideoChat = ({
     peer,
     camera,
     localUser,
-    user1,
-    user2,
-    user3,
-    user4,
-    user5,
-    user6,
-    user7,
-    user8,
-    user9,
-    user10,
-    user11,
   ]);
 
   useEffect(() => {
-    const remoteUserList = [
-      user1,
-      user2,
-      user3,
-      user4,
-      user5,
-      user6,
-      user7,
-      user8,
-      user9,
-      user10,
-      user11,
-    ];
     //开摄像头时，打开本地preview。重新建立peer.call
     if (
       "mediaDevices" in navigator &&
@@ -176,9 +152,14 @@ export const VideoChat = ({
       navigator.mediaDevices
         .getUserMedia(config)
         .then((stream) => {
-          localUser.localStream = stream;
+          setLocalUser((prev: any) => {
+            const newItem = prev;
+            newItem.localStream = stream;
+            return newItem;
+          })
+          setLocalStream(stream);
           remoteUserList.forEach((userObj: UserObj) => {
-            shareVideo(userObj.userPeerId);
+            if(userObj) shareVideo(userObj.userPeerId);
           });
         })
         .catch((err) => {
@@ -214,23 +195,26 @@ export const VideoChat = ({
   }, [
     camera,
     localUser,
-    user1,
-    user2,
-    user3,
-    user4,
-    user5,
-    user6,
-    user7,
-    user8,
-    user9,
-    user10,
-    user11,
   ]);
 
   useEffect(() => {
     //接收远程peer时处理
+    const remoteUserList = [
+      user1,
+      user2,
+      user3,
+      user4,
+      user5,
+      user6,
+      user7,
+      user8,
+      user9,
+      user10,
+      user11
+    ]
     if (peer) {
       peer.on("call", (call: MediaConnection) => {
+        console.log("get call")
         setCurrentCalls((prevCalls) => [...prevCalls, call]);
         if (!camera) {
           const emptyStream = new MediaStream();
@@ -239,24 +223,15 @@ export const VideoChat = ({
           call.answer(localUser.localStream || undefined);
         }
         call.on("stream", function (remoteStream: MediaStream) {
-          const remoteUserList = [
-            user1,
-            user2,
-            user3,
-            user4,
-            user5,
-            user6,
-            user7,
-            user8,
-            user9,
-            user10,
-            user11,
-          ];
+          console.log("get call stream,", remoteStream, remoteUserList)
           const index = remoteUserList.findIndex(
             (remoteUser: any) => remoteUser?.userPeerId === call.peer
           );
+          console.log(index, "index")
           if (index > -1) {
-            remoteUserList[index].remoteStream = remoteStream;
+            //remoteUserList[index].remoteStream = remoteStream;
+            setUserFuncs.current[index]((prev: any) => Object.assign({remoteStream}, prev));
+            console.log(remoteUserList, "remoteUserList2")
           }
         });
       });
@@ -272,16 +247,16 @@ export const VideoChat = ({
     camera,
     localUser,
     user1,
-    user2,
-    user3,
-    user4,
-    user5,
-    user6,
-    user7,
-    user8,
-    user9,
-    user10,
-    user11,
+      user2,
+      user3,
+      user4,
+      user5,
+      user6,
+      user7,
+      user8,
+      user9,
+      user10,
+      user11
   ]);
 
   useEffect(() => {
@@ -312,17 +287,6 @@ export const VideoChat = ({
     console.log(
       userList,
       localUser,
-      user1,
-      user2,
-      user3,
-      user4,
-      user5,
-      user6,
-      user7,
-      user8,
-      user9,
-      user10,
-      user11
     );
   };
 
@@ -334,7 +298,7 @@ export const VideoChat = ({
             <UserVideoCard
               key={localUser.userPeerId}
               userObj={localUser}
-              stream={localUser.localStream}
+              stream={localStream}
               socket={socket}
               isRoomMuted={isRoomMuted}
             />

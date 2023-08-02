@@ -9,7 +9,7 @@ import {
 } from "@/utils/AudioTracksSwitch";
 
 interface Props {
-  userObj: UserObj;
+  userObj: any;
   stream: any;
   socket: Socket;
   isRoomMuted: boolean;
@@ -17,6 +17,11 @@ interface Props {
 
 export const UserVideoCard = React.memo(
   ({ userObj, stream, socket, isRoomMuted }: Props) => {
+    console.log(stream, "stream")
+
+    const handleClick = () => {
+      console.log(stream, "stream")
+    }
     return (
       <div key={userObj.userPeerId} className="relative">
         {!stream ? (
@@ -34,7 +39,7 @@ export const UserVideoCard = React.memo(
                 ref.srcObject = stream;
               }
             }}
-            autoPlay={!isRoomMuted}
+            autoPlay
             playsInline
             muted={isRoomMuted}
           />
@@ -64,6 +69,7 @@ export const UserVideoCard = React.memo(
               />
             )}
           </div>
+          <button onClick={handleClick}>Click</button>
         </div>
       </div>
     );
