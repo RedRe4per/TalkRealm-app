@@ -184,8 +184,10 @@ export const VideoChat = ({
     remoteUserList.filter((remoteUser) => remoteUser).forEach((remoteUser: any) => {
         if(remoteUser.outgoingCall) remoteUser.outgoingCall.close()
         //remoteUser.outgoingCall = null;
-        if(remoteUser.sharedStream) remoteUser.sharedStream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
-        //remoteUser.sharedStream = null;
+        if(remoteUser.sharedStream) {
+          remoteUser.sharedStream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
+          remoteUser.sharedStream = null;
+        }
     });
 
   }, [camera])
@@ -292,7 +294,7 @@ export const VideoChat = ({
   const handleCheck = () => {
     console.log(userList, "list")
     console.log(
-      localStream ? localStream.getTracks() : "no"
+      localStream ? localStream.getTracks() : localStream
     );
   };
 
